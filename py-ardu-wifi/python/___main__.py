@@ -1,11 +1,14 @@
 
 from dataStream.collectionDataStream import CollectionDataStream
 from visualizer import Visualizer
-
+from dotenv import load_dotenv
+import os
 import time
 
 
-ds = CollectionDataStream('192.168.137.59', 3435)
+load_dotenv()
+
+ds = CollectionDataStream(os.getenv('ip'), int(os.getenv('port')))
 ds.start('data')
 
 
