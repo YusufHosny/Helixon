@@ -49,22 +49,35 @@ class ImageBrightnessDetect(object):
         if my_file.is_file():
             image = Image.open(self.__image_path)
             image.resize((1280, 720), Image.Resampling.LANCZOS)
-            return self.__calculate_level(self.__crop_top_right(image))
+            return self.__calculate_level(self.__crop_bottom_right(image))
         else:
             return "File does not exist"
     
-    def __crop_top_right(self, image):
+    # def __crop_top_right(self, image):
+    #     # Get image dimensions
+    #     width, height = image.size
+
+    #     # Calculate the size of the bottom-left 1/8th of the image
+    #     crop_width = width // 2  # Half of the width
+    #     crop_height = height // 4  # One-fourth of the height (1/8th total)
+
+    #     # Define the box to crop (left, upper, right, lower)
+    #     crop_box = (width - crop_width, 0, width, crop_height)
+
+    #     # Crop and return the bottom-left 1/8th of the image
+    #     return image.crop(crop_box)
+    def __crop_bottom_right(self, image):
         # Get image dimensions
         width, height = image.size
 
-        # Calculate the size of the bottom-left 1/8th of the image
-        crop_width = width // 2  # Half of the width
-        crop_height = height // 4  # One-fourth of the height (1/8th total)
+        # Calculate the dimensions for the crop (1/5th of width, 1/6th of height)
+        crop_width = width // 5
+        crop_height = height // 6
 
         # Define the box to crop (left, upper, right, lower)
-        crop_box = (width - crop_width, 0, width, crop_height)
+        crop_box = (width - crop_width, height - crop_height, width, height)
 
-        # Crop and return the bottom-left 1/8th of the image
+        # Crop and return the bottom-right section of the image
         return image.crop(crop_box)
 
     @staticmethod

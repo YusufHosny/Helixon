@@ -1,4 +1,5 @@
 import threading, queue
+import os.path as osp
 
 X = 0
 Y = 1
@@ -20,7 +21,7 @@ class DataEntry:
 
 class DataManager:
     def __init__(self, path):
-        self._path = path
+        self._path = osp.join(osp.dirname(osp.realpath(__file__)), path)
 
     def __enter__(self):
         self.to_write = queue.Queue()

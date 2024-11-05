@@ -1,5 +1,5 @@
-char ssid[] = "AAAAAAARGHHHHHHHA";
-char pass[] = "wordpass12";
+char ssid[] = "wifiFromLibanon";
+char pass[] = "libanonnumba1";
 // char ssid[] = "RACIALLY MOTIVATED WIFI";
 // char pass[] = "amogus12";
 
