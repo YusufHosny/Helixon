@@ -101,15 +101,15 @@ def rawDataIterator(dataset_name):
 def labelAndStore(dataset_name):
 
     led_values = imageIterator(dataset_name)
+    print(led_values)
     filtered_gt_data = gtPoseIterator(dataset_name)
     filtered_raw_data = rawDataIterator(dataset_name)
 
-    # Filtering out gt samples where LED is off
-    for i,brightness in enumerate(led_values):
+    # Create a mask for brightness levels 7 or above, truncating if necessary
+    mask = np.array(led_values[:filtered_gt_data.shape[0]]) > 7
 
-        if brightness < 5:
-            np.delete(filtered_gt_data,i)
-
+    # Apply the mask to filter out entries in filtered_gt_data and filtered_raw_data
+    filtered_gt_data = filtered_gt_data[mask]
     storeAsHDF5(dataset_name, filtered_raw_data, filtered_gt_data)
 
     

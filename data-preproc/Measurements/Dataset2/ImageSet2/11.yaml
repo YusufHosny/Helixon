@@ -1,0 +1,19 @@
+%YAML:1.0
+---
+camera_name: "11"
+image_width: 960
+image_height: 720
+camera_matrix:
+   rows: 3
+   cols: 3
+   data: [ 7.3058459472656250e+02, 0., 4.7977441406250000e+02, 0.,
+       7.3058459472656250e+02, 3.4715066528320312e+02, 0., 0., 1. ]
+distortion_coefficients:
+   rows: 1
+   cols: 5
+   data: [ 0., 0., 0., 0., 0. ]
+distortion_model: plumb_bob
+local_transform:
+   rows: 3
+   cols: 4
+   data: [ 0., 0., 1., 0., 1., 0., 0., 0., 0., 1., 0., 0. ]
