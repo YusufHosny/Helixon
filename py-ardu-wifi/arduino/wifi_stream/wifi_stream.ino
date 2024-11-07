@@ -20,6 +20,8 @@ void setup() {
   delay(2000);
   Serial.begin(9600);
 
+  pinMode(6, OUTPUT);  // Set the LED pin as an output
+
   enable_WiFi();
   connect_WiFi();
   startTCPServer();

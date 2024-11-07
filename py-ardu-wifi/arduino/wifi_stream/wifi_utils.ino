@@ -168,6 +168,7 @@ void streamDataEntries() {
   client = server.available();
   if (client) {                
     Serial.println("new client");
+    digitalWrite(6, HIGH);    
     delay(1);
     while(client.connected()) {
 
@@ -188,6 +189,7 @@ void streamDataEntries() {
     // close the connection
     client.stop();
     Serial.println("client disconnected");
+    digitalWrite(6, LOW);    
   }
 }
 void printWifiData() {

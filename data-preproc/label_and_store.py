@@ -93,7 +93,7 @@ def rawDataIterator(dataset_name):
             raw_data.append(row_data)
 
     # Convert raw_data to a numpy array with a consistent dtype
-    raw_data = np.array(raw_data, dtype=np.float32)
+    raw_data = np.array(raw_data, dtype=np.float64)
 
     return raw_data
 
@@ -101,16 +101,43 @@ def rawDataIterator(dataset_name):
 def labelAndStore(dataset_name):
 
     led_values = imageIterator(dataset_name)
-    print(led_values)
+
     filtered_gt_data = gtPoseIterator(dataset_name)
     filtered_raw_data = rawDataIterator(dataset_name)
 
+    led_values = led_values[200:]
+    filtered_gt_data = filtered_gt_data[200:]
+
     # Create a mask for brightness levels 7 or above, truncating if necessary
     mask = np.array(led_values[:filtered_gt_data.shape[0]]) > 7
-
+    
     # Apply the mask to filter out entries in filtered_gt_data and filtered_raw_data
     filtered_gt_data = filtered_gt_data[mask]
-    storeAsHDF5(dataset_name, filtered_raw_data, filtered_gt_data)
+
+    # Normalize timestamps in filtered_gt_data
+    gt_initial_timestamp = filtered_gt_data[0, 0]
+    filtered_gt_data[:, 0] -= gt_initial_timestamp
+
+    # Normalize timestamps in filtered_raw_data
+    raw_initial_timestamp = filtered_raw_data[0, 0]
+    filtered_raw_data[:, 0] -= raw_initial_timestamp
+
+    # Extract timestamps
+    gt_timestamps = filtered_gt_data[:, 0]  # Assuming timestamp is the first column in filtered_gt_data
+    raw_timestamps = filtered_raw_data[:, 0] # Assuming timestamp is the first column in filtered_raw_data
+    filtered_gt_data[:, 0] = (filtered_gt_data[:, 0] * 1e6).astype(int)
+
+    # Synchronize filtered_raw_data with filtered_gt_data by finding the closest timestamps
+    synchronized_raw_data = []
+    for gt_time in filtered_gt_data[:, 0]:
+        # Find the index of the closest timestamp in raw_timestamps
+        closest_index = (np.abs(raw_timestamps - gt_time)).argmin()
+        synchronized_raw_data.append(filtered_raw_data[closest_index])
+
+    # Convert synchronized_raw_data to a numpy array
+    synchronized_raw_data = np.array(synchronized_raw_data)
+
+    storeAsHDF5(dataset_name, synchronized_raw_data, filtered_gt_data)
 
     
 

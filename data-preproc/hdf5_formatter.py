@@ -8,17 +8,17 @@ import h5py
 
 def storeAsHDF5(dataset_name, raw_data, gt_data):
     # Grouping raw data based on the specified structure
-    timestamp_data = np.array([row[0] for row in raw_data], dtype=np.int32)
-    nine_dof_data = np.array([row[1:10] for row in raw_data], dtype=np.float32)
-    rpy_data = np.array([row[10:13] for row in raw_data], dtype=np.float32)
-    bno_data = np.array([row[13] for row in raw_data], dtype=np.int32)
-    bmp_data = np.array([row[14] for row in raw_data], dtype=np.float32)
-    pressure_data = np.array([row[15] for row in raw_data], dtype=np.float32)
+    timestamp_data = np.array([row[0] for row in raw_data], dtype=np.float64)
+    nine_dof_data = np.array([row[1:10] for row in raw_data], dtype=np.float64)
+    rpy_data = np.array([row[10:13] for row in raw_data], dtype=np.float64)
+    bno_data = np.array([row[13] for row in raw_data], dtype=np.int64)
+    bmp_data = np.array([row[14] for row in raw_data], dtype=np.float64)
+    pressure_data = np.array([row[15] for row in raw_data], dtype=np.float64)
 
     # Ensure ground-truth data is organized correctly: timestamp, position (x, y, z), and orientation (qx, qy, qz, qw)
-    gt_timestamp = np.array([row[0] for row in gt_data], dtype=np.int32)
-    gt_position = np.array([row[1:4] for row in gt_data], dtype=np.float32)  # Assuming x, y, z
-    gt_orientation = np.array([row[4:8] for row in gt_data], dtype=np.float32)  # Assuming qx, qy, qz, qw
+    gt_timestamp = np.array([row[0] for row in gt_data], dtype=np.float64)
+    gt_position = np.array([row[1:4] for row in gt_data], dtype=np.float64)  # Assuming x, y, z
+    gt_orientation = np.array([row[4:8] for row in gt_data], dtype=np.float64)  # Assuming qx, qy, qz, qw
 
     # Creating a new .h5 file in the HDF5s folder
     file_path = os.path.join("HDF5s", f"{dataset_name}.h5")
