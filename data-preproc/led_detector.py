@@ -16,8 +16,6 @@
 #
 # See the README file for information on usage.
 
-import math
-import sys
 from pathlib import Path
 import argparse
 

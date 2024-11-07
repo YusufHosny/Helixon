@@ -3,7 +3,7 @@ from os import listdir
 import sys
 import numpy as np
 from led_detector import ImageBrightnessDetect
-from hdf5_formatter import *
+from hdf5_io import *
 
 
 # Creates an array of images to detect the brightness of the LED (for synchronization purposes)

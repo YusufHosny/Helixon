@@ -2,10 +2,6 @@ import h5py
 import numpy as np
 import os
 
-import os
-import numpy as np
-import h5py
-
 def storeAsHDF5(dataset_name, raw_data, gt_data):
     # Grouping raw data based on the specified structure
     timestamp_data = np.array([row[0] for row in raw_data], dtype=np.float64)
@@ -39,13 +35,6 @@ def storeAsHDF5(dataset_name, raw_data, gt_data):
         gtdata_group.create_dataset('TIMESTAMP', data=gt_timestamp)
         gtdata_group.create_dataset('POSITION', data=gt_position)
         gtdata_group.create_dataset('ORIENTATION', data=gt_orientation)
-
-
-
-
-
-
-
 
 def readHDF5(dataset_name):
     # File path to the HDF5 file
