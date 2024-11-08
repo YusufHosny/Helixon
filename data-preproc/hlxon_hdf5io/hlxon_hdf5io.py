@@ -17,8 +17,8 @@ def storeAsHDF5(dataset_name, raw_data, gt_data):
     gt_orientation = np.array([row[4:8] for row in gt_data], dtype=np.float64)  # Assuming qx, qy, qz, qw
 
     # Creating a new .h5 file in the HDF5s folder
-    file_path = os.path.join("HDF5s", f"{dataset_name}.h5")
-    os.makedirs("HDF5s", exist_ok=True)  # Ensure the directory exists
+    file_path = os.path.join("data", f"{dataset_name}.h5")
+    os.makedirs("data", exist_ok=True)  # Ensure the directory exists
 
     with h5py.File(file_path, 'w') as f:
         # Creating the RAWDATA group
@@ -38,20 +38,21 @@ def storeAsHDF5(dataset_name, raw_data, gt_data):
 
 def readHDF5(dataset_name):
     # File path to the HDF5 file
-    file_path = os.path.join("HDF5s", f"{dataset_name}.h5")
+    file_path = os.path.join("data", f"{dataset_name}.h5")
 
     # Opening the HDF5 file in read mode
     with h5py.File(file_path, 'r') as f:
         # Accessing raw data under RAWDATA group
-        timestamp_data = f['RAWDATA/TIMESTAMP'][:]
-        nine_dof_data = f['RAWDATA/9DOF'][:]
-        rpy_data = f['RAWDATA/RPY'][:]
-        bno_data = f['RAWDATA/BNO'][:]
-        bmp_data = f['RAWDATA/BMP'][:]
-        pressure_data = f['RAWDATA/PRESSURE'][:]
+        raw_timestamp = f['RAWDATA/TIMESTAMP'][:]
+        raw_nine_dof = f['RAWDATA/9DOF'][:]
+        raw_rpy = f['RAWDATA/RPY'][:]
+        raw_bno = f['RAWDATA/BNO'][:]
+        raw_bmp = f['RAWDATA/BMP'][:]
+        raw_pressure = f['RAWDATA/PRESSURE'][:]
 
         # Accessing ground truth data
-        gt_position = f['Outputs/Position'][:]
-        gt_orientation = f['Outputs/Orientation'][:]
+        gt_timestamp = f['GT_DATA/TIMESTAMP'][:]
+        gt_position = f['GT_DATA/POSITION'][:]
+        gt_orientation = f['GT_DATA/ORIENTATION'][:]
 
-    return timestamp_data, nine_dof_data, rpy_data, bno_data, bmp_data, pressure_data, gt_position, gt_orientation
+    return raw_timestamp, raw_nine_dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, gt_timestamp, gt_position, gt_orientation
