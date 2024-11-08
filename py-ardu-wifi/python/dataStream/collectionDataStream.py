@@ -30,6 +30,7 @@ class CollectionDataStream(DataStream):
                 print("connected")
                 d = DataEntry()
                 while not self._done:
+                    tprev = None
                     try:
                         raw_data = s.recv(128)
                         data_entry_struct = struct.unpack('<LLddddddddddddBBBBLdd', raw_data) # manually padding
@@ -51,6 +52,8 @@ class CollectionDataStream(DataStream):
                         d.pressure = data_entry_struct[20]              
                         
                         dm.write(d)
-                        time.sleep(0.01)
+                        if tprev is not None:
+                            time.sleep((d.ts - tprev)*1e-6)
+                        tprev = d.ts
                     except:
                         pass

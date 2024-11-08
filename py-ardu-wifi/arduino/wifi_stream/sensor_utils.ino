@@ -24,10 +24,10 @@ void setup_bmp() {
   }
 
   // Set up oversampling and filter initialization
-  bmp.setTemperatureOversampling(BMP3_OVERSAMPLING_8X);
-  bmp.setPressureOversampling(BMP3_OVERSAMPLING_4X);
+  bmp.setTemperatureOversampling(BMP3_OVERSAMPLING_32X);
+  bmp.setPressureOversampling(BMP3_OVERSAMPLING_32X);
   bmp.setIIRFilterCoeff(BMP3_IIR_FILTER_COEFF_3);
-  bmp.setOutputDataRate(BMP3_ODR_50_HZ);
+  bmp.setOutputDataRate(BMP3_ODR_200_HZ);
 }
 
 void fillData(DataEntry *data) {
@@ -50,9 +50,9 @@ void fillData(DataEntry *data) {
   data->pitch = event.orientation.pitch;
   data->yaw = event.orientation.heading;
   data->tempbno = bno.getTemp();
+  bmp.performReading();
   data->tempbmp = bmp.temperature;
   data->pressure = bmp.pressure;
-
 }
 
 
