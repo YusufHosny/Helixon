@@ -1,11 +1,11 @@
-from hlxon_hdf5io import *
 from os import path as osp
 import numpy as np
 import matplotlib.pyplot as plt
+from hlxon_hdf5io import *
 from scipy.spatial.transform import Rotation
 
 # get data from hdf5
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, gt_timestamp, gt_position, gt_orientation = readHDF5('up_and_down')
+raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, gt_timestamp, gt_position, gt_orientation = readHDF5('synthetic')
 
 # convenience
 X, Y, Z = 0, 1, 2
@@ -19,7 +19,7 @@ ts = raw_timestamp
 
 # rotate acceleration to global coords
 accel = np.zeros_like(araw)
-for i, rpyi in enumerate(raw_rpy):
+for i, rpyi in enumerate(gt_orientation):
     rot = Rotation.from_euler('xyz', rpyi, degrees=True).inv()
     accel[i] = rot.apply(araw[i])
 

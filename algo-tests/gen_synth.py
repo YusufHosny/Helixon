@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from scipy.spatial.transform import Rotation
+from hlxon_hdf5io import *
 
 """
 Spiral Synthetic Sensor Data Generator
@@ -156,29 +157,23 @@ for i in range(N):
     magn[i, Y] += np.random.normal(mean_magnet, std_magnet)
     magn[i, Z] += np.random.normal(mean_magnet, std_magnet)
 
-data = {
-    'timestamp':    t.flatten(),
-    'gt_posx':      gt_pos[:, 0],
-    'gt_posy':      gt_pos[:, 1],
-    'gt_posz':      gt_pos[:, 2],
-    'gt_roll':      roll.flatten(),
-    'gt_pitch':     pitch.flatten(),
-    'gt_yaw':       yaw.flatten(),
-    'gtaccelx':     araw[:, X].flatten(),
-    'gtaccely':     araw[:, Y].flatten(),
-    'gtaccelz':     araw[:, Z].flatten(),
-    'accelx':       accel[:, X].flatten(),
-    'accely':       accel[:, Y].flatten(),
-    'accelz':       accel[:, Z].flatten(),
-    'gyrox':        gyro[:, X].flatten(),
-    'gyroy':        gyro[:, Y].flatten(),
-    'gyroz':        gyro[:, Z].flatten(),
-    'magnx':        magn[:, X].flatten(),
-    'magny':        magn[:, Y].flatten(),
-    'magnz':        magn[:, Z].flatten(),
-    'tempbno':      tbno.flatten(),
-    'tempbmp':      tbmp.flatten(),
-    'pressure':     ps
-}
-df = pd.DataFrame(data)
-df.to_csv('synthetic_data.csv', index=False)
+data = np.concatenate( (ts,
+                accel[:, X].reshape(-1, 1),
+                accel[:, Y].reshape(-1, 1),
+                accel[:, Z].reshape(-1, 1),
+                gyro[:, X].reshape(-1, 1),
+                gyro[:, Y].reshape(-1, 1),
+                gyro[:, Z].reshape(-1, 1),
+                magn[:, X].reshape(-1, 1),
+                magn[:, Y].reshape(-1, 1),
+                magn[:, Z].reshape(-1, 1),
+                roll, pitch, yaw, tbno, tbmp, ps.reshape(-1, 1)),
+                    axis=1)
+gtdata = np.concatenate( (ts, \
+                gt_pos[:, 0].reshape(-1, 1), 
+                gt_pos[:, 1].reshape(-1, 1), 
+                gt_pos[:, 2].reshape(-1, 1), 
+                roll, pitch, yaw), 
+                axis = 1)
+
+storeAsHDF5('synthetic', data, gtdata)
