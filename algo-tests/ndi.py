@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from hlxon_hdf5io import *
 from scipy.spatial.transform import Rotation
 
+from metrics import *
+
 # get data from hdf5
 raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, gt_timestamp, gt_position, gt_orientation = readHDF5('synthetic')
 
@@ -33,7 +35,10 @@ for i in range(1, N):
     dt = (ts[i]-ts[i-1])
     vi += accel[i]*dt
     pos[i] = pos[i-1] + vi*dt + 0.5*accel[i]*dt**2
-    
+
+# get error and print    
+ate, rte = compute_ate_rte(pos, gt_position, 10)
+print(f'Absolute Trajectory Error: {ate}\nRelative Trajectory Error: {rte}')
 
 # plot synth ndi and gt
 fig = plt.figure()
