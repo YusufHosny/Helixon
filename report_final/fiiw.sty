@@ -1,0 +1,726 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%		This syntax file is intended for students of the                      %
+%		FIIW writing their master thesis.                                     %
+%		We hope they can use it as a helping hand in writing their thesis.    %
+%                                                                             %
+%		History :                                                             %
+%		- Syntax originally written by Filip Van Rysselberghe                 %
+%		- Adapted for KaHo St. Lieven by Bart Blanckaert                      %
+%		- Modified by Koen Vangheluwe based on PhD stylefile of RUG           %
+%		- Adapted for FIIW by Jannes Verstichel (v1.2)                        %
+%		- Rewritten by Jeroen Van Aken: one package for all campuses (v2.0)   %
+%		- Modified by Jeroen Van Aken: changes in style guidelines for fiiw   %
+%		- Modified by Jeroen Van Aken: added twocolumn template               %
+%		Last modified: 27/10/2022 v2.3                                        %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{fiiw}[2020/03/01 FIIW Master Thesis template package]
+\RequirePackage{multirow,tabularx}
+\RequirePackage{fancyhdr}
+\PassOptionsToPackage{final}{pdfpages}
+\RequirePackage{pdfpages}
+\RequirePackage{pslatex}
+\RequirePackage{eso-pic}
+\RequirePackage[small,bf,hang]{caption}     % better markup for captions
+\RequirePackage{etoolbox}
+\RequirePackage{titlesec,titletoc}
+\RequirePackage[titletoc,toc]{appendix}
+\RequirePackage{xcolor}
+\RequirePackage{graphicx}
+
+\@ifclassloaded{report}{
+	\RequirePackage[a4paper,left=1.5cm, right=1.5cm, top=2cm, bottom=2cm]{geometry}
+}{
+	\RequirePackage[a4paper,left=3.5cm, right=2.5cm, top=3.5cm, bottom=3.5cm]{geometry}
+}
+
+\PassOptionsToPackage{dutch,english}{babel}
+\RequirePackage{babel}
+
+\newcommand{\xselectlanguage}[1]{%
+	\begingroup\edef\x{\endgroup
+		\noexpand\selectlanguage{#1}}\x
+}
+
+\newenvironment{xotherlanguage}[1]{%
+	\begingroup
+	\edef\temp{\endgroup\noexpand\otherlanguage{#1}}%
+	\temp
+}{\endotherlanguage}
+
+\newif\if@restoretwocolumn
+\newenvironment{singlecolumnsection}{%
+	\if@twocolumn%
+		\@restoretwocolumntrue\onecolumn%
+	\fi%
+}{%
+	\if@restoretwocolumn%
+		\twocolumn%
+	\fi%
+}%
+
+% Load files depending on the declared options in this package
+\newif\if@acknowledgements\@acknowledgementsfalse
+\newcommand{\acknowledgementsfile}[1]{\@acknowledgementstrue\gdef\@acknowledgementsfile{\input{#1}}}
+\DeclareOption{noacknowledgements}{\renewcommand{\acknowledgementsfile}[1]{\@acknowledgementsfalse}}
+
+\newif\if@abstractEN\@abstractENfalse
+\newcommand{\abstractENfile}[1]{\@abstractENtrue\gdef\@abstractENfile{\input{#1}}}
+\DeclareOption{noabstract}{\renewcommand{\abstractENfile}[1]{\@abstractENfalse}}
+
+\newif\if@abstractNL\@abstractNLfalse
+\newcommand{\abstractNLfile}[1]{\@abstractNLtrue\gdef\@abstractNLfile{\input{#1}}}
+\DeclareOption{nosamenvatting}{\renewcommand{\abstractNLfile}[1]{\@abstractNLfalse}}
+
+\newif\if@listofsymbols\@listofsymbolsfalse
+\newcommand{\listofsymbolsfile}[1]{\@listofsymbolstrue\gdef\@listofsymbolsfile{\input{#1}}}
+\DeclareOption{nolistofsymbols}{\renewcommand{\listofsymbolsfile}[1]{\@listofsymbolsfalse}}
+
+\newif\if@listoffigurespage\@listoffigurespagetrue
+\DeclareOption{nolistoffigures}{\@listoffigurespagefalse}
+
+\newif\if@listoftablespage\@listoftablespagetrue
+\DeclareOption{nolistoftables}{\@listoftablespagefalse}
+
+\newif\if@nocover\@nocoverfalse
+\DeclareOption{nocover}{\@nocovertrue}
+
+\DeclareOption{groept}{
+	\def\@campus{Group T Leuven Campus}
+	\def\@campusStreet{Andreas Vesaliusstraat 13}
+	\def\@campusCity{3000 Leuven}
+	\def\@campusCountry{Belgium}
+	\def\@campusPhone{+32 16 30 10 30}
+	\def\@campusFax{+32 16 30 10 40}
+	\def\@campusEmail{fet.groupt@kuleuven.be}
+	\addto\extrasdutch{
+		\renewcommand{\@campus}{Campus GROEP T Leuven}
+		\renewcommand{\@campusEmail}{iiw.groept@kuleuven.be}
+		\renewcommand{\@campusCountry}{Belgi\"e}
+	}
+}
+
+\DeclareOption{denayer}{
+	\def\@campus{Technology Campus De Nayer}
+	\def\@campusStreet{Jan De Nayerlaan 5}
+	\def\@campusCity{2860 Sint-Katelijne-Waver}
+	\def\@campusCountry{Belgium}
+	\def\@campusPhone{+32 15 31 69 44}
+	\def\@campusFax{+32 15 31 74 53}
+	\def\@campusEmail{fet.denayer@kuleuven.be}
+	\addto\extrasdutch{
+		\renewcommand{\@campus}{Technologiecampus De Nayer}
+		\renewcommand{\@campusEmail}{iiw.denayer@kuleuven.be}
+		\renewcommand{\@campusCountry}{Belgi\"e}
+	}
+}
+
+\DeclareOption{gent}{
+	\def\@campus{Technology Campus Gent}
+	\def\@campusStreet{Gebroeders De Smetstraat 1}
+	\def\@campusCity{8200 Gent}
+	\def\@campusCountry{Belgium}
+	\def\@campusPhone{+32 50 66 48 00}
+	\def\@campusFax{}
+	\def\@campusEmail{fet.gent@kuleuven.be}
+	\addto\extrasdutch{
+		\renewcommand{\@campus}{Technologiecampus Gent}
+		\renewcommand{\@campusEmail}{iiw.gent@kuleuven.be}
+		\renewcommand{\@campusCountry}{Belgi\"e}
+	}
+}
+
+\DeclareOption{geel}{
+	\def\@campus{Campus Geel}
+	\def\@campusStreet{Kleinhoefstraat 4}
+	\def\@campusCity{2440 Geel}
+	\def\@campusCountry{Belgium}
+	\def\@campusPhone{+32 14 80 22 40}
+	\def\@campusFax{}
+	\def\@campusEmail{fet.geel@kuleuven.be}
+	\addto\extrasdutch{
+		\renewcommand{\@campus}{Campus Geel}
+		\renewcommand{\@campusEmail}{iiw.geel@kuleuven.be}
+		\renewcommand{\@campusCountry}{Belgi\"e}
+	}
+}
+
+\DeclareOption{brugge}{
+	\def\@campus{Campus Brugge}
+	\def\@campusStreet{Spoorwegstraat 12}
+	\def\@campusCity{8200 Brugge}
+	\def\@campusCountry{Belgium}
+	\def\@campusPhone{+32 50 66 48 00}
+	\def\@campusFax{}
+	\def\@campusEmail{fet.brugge@kuleuven.be}
+	\addto\extrasdutch{
+		\renewcommand{\@campus}{Campus Brugge}
+		\renewcommand{\@campusEmail}{iiw.brugge@kuleuven.be}
+		\renewcommand{\@campusCountry}{Belgi\"e}
+	}
+}
+
+\ExecuteOptions{groept}
+
+\ProcessOptions\relax
+
+\def\@faculty{Faculty of Engineering Technology}
+\def\@facultyWebsite{www.iiw.kuleuven.be}
+\def\@academicyearlabel{Academic Year}
+\def\@supervisorlabel{Coach}
+\def\@cosupervisorlabel{Co-supervisor(s)}
+\def\@memberlabel{Member of}
+\def\@coverText{Technical paper submitted to obtain the degree of Bachelor of Science in \@program}
+\def\@copyright{This paper is a document that has not been corrected for any errors. Without written permission of the course coordinator and the author(s), it is forbidden to reproduce or adapt in any form or by any means any part of this work. Requests for obtaining the right to reproduce or utilise parts of this work should be addressed to KU Leuven, \@campus, \@campusStreet, \@campusCity, \@campusPhone\space or via e-mail \@campusEmail}
+\def\@copyrightmaterial{A written permission of the course coordinator is also required to use the methods, products, schematics and programs described in this work for industrial or commercial use, and for submitting this work in scientific contests.}
+\def\@acknowledgementslabel{Acknowledgements}
+\def\@listofsymbolslabel{List of Symbols}
+\def\@embargotext{This paper is under embargo until}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Define commands to load variables from main file        %
+% and set default values if needed                        %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% default values
+\gdef\@title{Paper Title}
+\gdef\@subtitle{Subtitle (if any)}
+\gdef\@supervisorname{My Coach}
+\gdef\@supervisorEmail{my.coach@kuleuven.be}
+\gdef\@cosupervisorAname{}
+\gdef\@cosupervisorACompany{}
+\gdef\@cosupervisorAEmail{}
+\gdef\@program{Engineering Department}
+\gdef\@academicyear{xxxx - xxxx}
+\gdef\@firstnameA{Firstname}
+\gdef\@lastnameA{Lastname}
+\gdef\@documentlanguage{english}
+\gdef\@coverlanguage{\@documentlanguage}
+% command definitions
+\newcommand{\subtitle}[1]{\gdef\@subtitle{#1}}
+\newcommand{\supervisor}[1]{\gdef\@supervisorname{#1}}
+\newcommand{\supervisorEmail}[1]{\gdef\@supervisorEmail{#1}}
+\newcommand{\cosupervisorA}[1]{\gdef\@cosupervisorAname{#1}}
+\newcommand{\cosupervisorACompany}[1]{\gdef\@cosupervisorACompany{#1}}
+\newcommand{\cosupervisorAEmail}[1]{\gdef\@cosupervisorAEmail{#1}}
+\newcommand{\cosupervisorB}[1]{\gdef\@cosupervisorBname{#1}}
+\newcommand{\cosupervisorBCompany}[1]{\gdef\@cosupervisorBCompany{#1}}
+\newcommand{\cosupervisorBEmail}[1]{\gdef\@cosupervisorBEmail{#1}}
+\newcommand{\program}[1]{\gdef\@program{#1}}
+\newcommand{\academicyear}[1]{\gdef\@academicyear{#1}}
+\newcommand{\firstnameA}[1]{\gdef\@firstnameA{#1}}
+\newcommand{\lastnameA}[1]{\gdef\@lastnameA{#1}}
+\newcommand{\firstnameB}[1]{\gdef\@firstnameB{#1}}
+\newcommand{\lastnameB}[1]{\gdef\@lastnameB{#1}}
+% BEGIN IB3 more names in a team
+\newcommand{\firstnameC}[1]{\gdef\@firstnameC{#1}}
+\newcommand{\lastnameC}[1]{\gdef\@lastnameC{#1}}
+\newcommand{\firstnameD}[1]{\gdef\@firstnameD{#1}}
+\newcommand{\lastnameD}[1]{\gdef\@lastnameD{#1}}
+\newcommand{\firstnameE}[1]{\gdef\@firstnameE{#1}}
+\newcommand{\lastnameE}[1]{\gdef\@lastnameE{#1}}
+% END IB3 more names in a team
+\newcommand{\documentlanguage}[1]{\gdef\@documentlanguage{#1}}
+\newcommand{\coverlanguage}[1]{\gdef\@coverlanguage{#1}}
+
+\renewcommand{\appendixname}{List of appendices}
+
+\newif\if@embargoshow\@embargoshowfalse
+\def\embargo#1{\@embargoshowtrue\gdef\@embargo{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%	Basic styling and indentation settings			   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\definecolor{titlegreen}{RGB}{29,141,176}
+\definecolor{kullightblue}{RGB}{82,189,236}
+
+%\setlength{\parindent}{0pt}
+%\setlength{\parskip}{1ex plus 0.5ex minus 0.25ex}
+%\setlength{\abovedisplayskip}{12pt plus 3pt}
+%\setlength{\belowdisplayskip}{12pt plus 3pt}
+%\setlength{\abovedisplayshortskip}{12pt plus 3pt}
+%\setlength{\belowdisplayshortskip}{12pt plus 3pt}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.7em}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%	Font and header styling							   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% overall chapter styling in TOC
+\titlecontents{chapter}[0em]
+	{\vskip 0.5ex}% before
+	{\hskip2.5ex\bfseries\contentslabel{1.5em}}% numbered sections formattin
+	{\bfseries}% unnumbered sections formatting
+	{\bfseries\titlerule*[1pc]{.}\contentspage}% after
+% section styling in TOC
+\titlecontents{section}[4em]
+	{\vskip 0.5ex}% before
+	{\contentslabel{2em}}% numbered sections formattin
+	{}% unnumbered sections formatting
+	{\titlerule*[1pc]{.}\contentspage}% after
+
+\@ifclassloaded{report}
+{
+	% overall section styling
+	\titleformat{\section}[block]
+		{\normalfont\bf}	% format for the full title
+		{\thesection} %label
+		{1em}	%seperation between label and title body
+		{}	%between label and title
+		[] %after
+	\titleformat{\subsection}[block]
+		{\normalfont}	% format for the full title
+		{\thesubsection} %label
+		{1em}	%seperation between label and title body
+		{}	%between label and title
+		[] %after
+	\titleformat{\subsubsection}[block]
+		{\normalfont}	% format for the full title
+		{\thesubsubsection} %label
+		{1em}	%seperation between label and title body
+		{}	%between label and title
+		[] %after
+	\titleclass{\chapter}{straight}
+	\titlespacing{\chapter}{0pt}{2em}{0cm}  %{left} {before} {after} {right}
+	\titlespacing{\section}{0pt}{2em}{0cm}  %{left} {before} {after} {right}
+}{
+	% overall section styling
+	\titleformat{\section}[block]
+		{\normalfont\large}	% format for the full title
+		{\thesection} %label
+		{1em}	%seperation between label and title body
+		{}	%between label and title
+		[] %after
+	\titleformat{\subsection}[block]
+		{\normalfont\large}	% format for the full title
+		{\thesubsection} %label
+		{1em}	%seperation between label and title body
+		{}	%between label and title
+		[] %after
+	\titleformat{\subsubsection}[block]
+		{\normalfont\large}	% format for the full title
+		{\thesubsubsection} %label
+		{1em}	%seperation between label and title body
+		{}	%between label and title
+		[] %after
+	% overall chapter spacing
+	\titlespacing{\chapter}{0pt}{1cm}{1cm}  %{left} {before} {after} {right}
+	% overall chapter styling  can be found below (differs in preface and actual text)
+}
+
+\renewcommand*\familydefault{\sfdefault}
+
+\pagestyle{plain}
+\fancyhf{}
+\@ifclasswith{book}{twoside} {
+	\fancyhead[LE,RO]{\scriptsize\bfseries\sffamily\thepage}
+	\fancyhead[LO,RE]{\scriptsize\bfseries\sffamily\leftmark}
+}{
+	\fancyhead[C]{\scriptsize\bfseries\sffamily\thepage}
+	\fancyhead[L]{\scriptsize\bfseries\sffamily\leftmark}
+}
+\fancypagestyle{plain}{
+	\fancyhf{}
+	\fancyfoot[C]{\scriptsize\bfseries\sffamily\thepage}
+	\renewcommand{\headrulewidth}{0pt}
+	\renewcommand{\footrulewidth}{0pt}
+}
+
+% cleardoublepage has to behave different when in doublesides, single sided or twocolumn
+\def\cleardoublepage{%
+	\clearpage%
+	\if@twoside%
+		\ifodd%
+			\c@page%
+		\else
+			\hbox{}
+			\thispagestyle{empty}
+			\newpage
+			\if@twocolumn%
+				\hbox{}\newpage
+			\fi
+		\fi
+	\fi
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%	Declare the specification for the watermarks	   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand\BackgroundSedes{%
+	\put(0,0){%
+		\parbox[b][\paperheight]{\paperwidth}{%
+			\vfill\hfill%
+			\includegraphics[width=11cm,keepaspectratio]{images/logos/sedes.png}%
+			\hspace{1.2cm}\vspace{1.8cm}%
+		}
+	}
+}
+
+\newcommand\Backgroundlogo{%
+	\put(0,0){%
+		\parbox[b][\paperheight]{\paperwidth}{%
+			\vspace{1.8cm}\hfill%
+			\includegraphics[height=2cm,keepaspectratio]{images/logos/kuleuven_side.png}%
+			\vfill%
+		}
+	}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%	Style appendix and appendixpage					   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\appto{\appendix}{%
+	\titleformat{\chapter}[block]
+		{\normalfont\large\bfseries}	% format for the full title
+		{\MakeUppercase{\chaptertitlename}\space\thechapter\space:} %label
+		{1em}	%seperation between label and title body
+		{\MakeUppercase}	%between label and title
+		[] %after
+}
+
+\renewcommand{\@chap@pppage}{%
+	\clear@ppage
+	\thispagestyle{plain}%
+	\markboth{}{}%
+	\if@dotoc@pp
+		\addappheadtotoc
+	\fi
+	\begin{singlecolumnsection}
+		\AddToShipoutPicture*{\Backgroundlogo}
+		{\normalfont\Large\MakeUppercase{\appendixpagename}\vskip0.5em\titlerule}
+		%{\normalfont\LARGE\bfseries\appendixpagename\vskip2em}
+		\vspace{2em}
+		%\chapter*{\appendixpagename}
+		\startcontents[chapter]
+		\printcontents[chapter]{l}{0}{\setcounter{tocdepth}{2}}
+		\vfil\clearpage
+	\end{singlecolumnsection}
+	\renewcommand*{\thepage}{\thechapter-\arabic{page}}
+	\setcounter{page}{1}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%	This function formats the titlepage using the	   %
+%	variables set before.                	           %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\titlep{%
+	\thispagestyle{empty}\fontsize{12pt}{14pt}\selectfont%
+	\newgeometry{top=2.54cm,bottom=1.7cm,left=1.27cm,right=1.27cm}%
+	\setlength{\unitlength}{1cm}%
+	\begin{singlecolumnsection}%
+		\AddToShipoutPicture*{\BackgroundSedes} %
+		\colorbox{titlegreen}{ %
+			\parbox[t][2.35cm]{\textwidth-4mm}{ %
+				\raisebox{-1.1cm}[0cm][0cm]{\hskip+0.55cm\includegraphics[width=5.4cm]{./images/logos/KULEUVEN_CMYK_LOGO.eps}}%
+				\vskip0.45cm %
+				\fontsize{14pt}{14pt}\selectfont\textcolor{white}{ %
+					\hfill\parbox{10cm}{\raggedleft\MakeUppercase{\@faculty}\\\vskip+0.5cm\MakeUppercase{\@campus}\\}\hspace{4mm}%
+				}%
+			}%
+		}
+
+		\if@embargoshow
+		\raisebox{-0.7cm}[0cm][0cm]{ %take this out of the flow so it does not affect positions when not displayed
+			\parbox{\textwidth-0.6cm}{%
+				\raggedleft\textcolor{titlegreen}{%
+				{\fontsize{14pt}{14pt}\selectfont\MakeUppercase{Embargo}}\\
+				\fontsize{10pt}{10pt}\selectfont
+				\@embargotext\space\@embargo}
+			}
+		}%
+		\fi%
+		\vskip5cm
+		\hspace{1.2cm}\parbox{\textwidth-2.54cm}{
+			\fontsize{35pt}{35pt}\selectfont\raggedright %
+			\textcolor{titlegreen}{{\textsf{\@title}}}\par\vspace{-8pt}
+			{\LARGE\textsf{\,\@subtitle}}
+		}
+		\vfill
+
+		\parbox{\textwidth-0.6cm}{\raggedleft\LARGE\bfseries
+              % BEGIN IB3 more names in a team          
+            \@ifundefined{@lastnameE}{}{\@firstnameE~\MakeUppercase{\@lastnameE}}
+            
+            \vspace{0.5em}
+            \@ifundefined{@lastnameD}{}{\@firstnameD~\MakeUppercase{\@lastnameD}}
+            
+            \vspace{0.5em}
+            \@ifundefined{@lastnameC}{}{\@firstnameC~\MakeUppercase{\@lastnameC}}
+                        
+			\vspace{0.5em}% END IB3 more names in a team   
+			\@ifundefined{@lastnameB}{}{\@firstnameB~\MakeUppercase{\@lastnameB}}
+
+			\vspace{0.5em}
+			\@firstnameA~\MakeUppercase{\@lastnameA}
+		}
+		\vskip3.2cm
+		\hfill
+		\begin{tabular}{p{3cm}p{4.5cm}p{8cm}}
+			\@supervisorlabel: & 	\@supervisorname
+			& \multirow{4}{8cm}{\raggedleft\raggedbottom\@coverText\vfill}\\
+%			\@cosupervisorlabel: & \@cosupervisorAname\\
+%			&  \@ifundefined{@cosupervisorBname}{}{\@cosupervisorBname}\\
+		\end{tabular}
+		\vspace{1.5cm}
+
+		\parbox{\textwidth-0.6cm}{\raggedleft\@academicyearlabel~\@academicyear}
+
+		\vspace{0.2cm}\setlength\fboxsep{0pt}
+		\colorbox{titlegreen}{\hbox to \textwidth{\rule{0pt}{2mm}\hfill}}
+	\end{singlecolumnsection}%
+}
+
+\def\copyrightpage{%
+	\restoregeometry
+	\thispagestyle{empty}
+	\begin{singlecolumnsection}
+		\null
+		\vfill\fontsize{10pt}{12pt}\selectfont
+		\copyright Copyright KU Leuven \par\vskip2em
+		\@copyright \par\vskip2em
+		\@copyrightmaterial
+	\end{singlecolumnsection}
+}
+
+\def\titlepsimple{%
+	\thispagestyle{empty}
+	\newgeometry{left=1.5cm, right=1.5cm, top=1cm, bottom=1cm}
+	\begin{singlecolumnsection}
+		\raisebox{-0.2cm}[0pt][0pt]{
+			\includegraphics[width=3.5cm]{./images/logos/KULEUVEN_CMYK_LOGO.eps}}%
+		\hspace{0.3cm}
+		\parbox[b][1cm][t]{\linewidth-4cm}{\small\hyphenpenalty=10000
+			\@faculty~\@campus~|~\@coverText
+
+			{\em\@academicyearlabel~\@academicyear}
+		}
+		\if@embargoshow
+		\raisebox{0cm}[0cm][0cm]{ %take this out of the flow so it does not affect positions when not displayed
+			\parbox{\textwidth}{%
+				\raggedleft\textcolor{titlegreen}{%
+					{\fontsize{14pt}{14pt}\selectfont\MakeUppercase{Embargo}}\\
+					\fontsize{10pt}{10pt}\selectfont
+					\@embargotext\space\@embargo}
+			}
+		}%
+		\fi%
+		\vspace{3cm}
+		\begin{center}
+			{\fontsize{28pt}{28pt}\selectfont\@title}
+
+			{\LARGE\@subtitle}
+
+			\@lastnameA~\@firstnameA
+            \@ifundefined{@lastnameB}{}{, \@lastnameB~\@firstnameB}% BEGIN IB3 more names in a team
+            \@ifundefined{@lastnameC}{}{, \@lastnameC~\@firstnameC}\@ifundefined{@lastnameD}{}{, \@lastnameD~\@firstnameD}\@ifundefined{@lastnameE}{}{, \@lastnameE~\@firstnameE}% END IB3 more names in a team
+
+			{\small	Bachelor in \@program, \@faculty, \@campus, \@campusStreet, \@campusCity, \@campusCountry}
+
+			\vspace{1.5cm}
+
+			\@supervisorlabel:~\@supervisorname \\
+			{\small\@program, \@faculty, \@campus, \@campusStreet, \@campusCity, \@campusCountry, \@supervisorEmail}
+% No cosupervisor in IB3
+%			\@cosupervisorlabel:~\@cosupervisorAname\@ifundefined{@cosupervisorBname}{}{, \@cosupervisorBname} \\
+%			{\small\@cosupervisorACompany, $<$\@cosupervisorAEmail$>$%
+%				\@ifundefined{@cosupervisorBname}{}{\\\@cosupervisorBCompany, $<$\@cosupervisorBEmail$>$}}
+
+			\vfill
+			\parbox{0.8\linewidth}{\small
+				\if@abstractNL
+				\chapter*{Samenvatting}%
+				\@abstractNLfile
+				\fi%
+				\if@abstractEN
+				\chapter*{Abstract}%
+				\@abstractENfile
+				\fi%
+			}
+			\vfill
+			\parbox{\linewidth}{
+				\fontsize{7pt}{12pt}\selectfont
+				\copyright Copyright KU Leuven | \@copyright~\@copyrightmaterial
+			}
+		\end{center}
+	\end{singlecolumnsection}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%	This function formats the backcover using the	   %
+%	variables set before.                	           %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\@ifclassloaded{report}
+{%
+	% in report format, put extra chapters before bibliography
+	\pretocmd\bibliography{
+		%  Put acknowledgements at the end
+		\if@acknowledgements
+			\chapter*{\@acknowledgementslabel}%
+			\@acknowledgementsfile
+		\fi
+		% Also include list of symbols if needed
+		\if@listofsymbols
+			\chapter*{\@listofsymbolslabel}\addcontentsline{toc}{chapter}{\@listofsymbolslabel} %
+			\@listofsymbolsfile
+		\fi
+	}{}{}
+
+	%	Backcover definition for report
+	\newcommand\backcover{%
+		% for report format the back cover is empty
+	}
+}
+{%	Backcover definition for all other document types
+	\newcommand\backcover{%
+		\cleardoublepage %start at front
+		\ClearShipoutPicture
+		\thispagestyle{empty}\null\clearpage % put in empty page, so cover is on back
+		\thispagestyle{empty}
+		\newgeometry{top=2.54cm,bottom=1.5cm,left=1.2cm,right=1.2cm}
+		\begin{singlecolumnsection}
+			\hfill\begin{minipage}{5.4cm}
+				\colorbox{kullightblue}{
+					%first box for lightblue border
+					\vbox to 2cm{\hbox to 5cm{% size of the blue box
+							\hskip-5.4cm\raisebox{-0.3cm}[0pt][0pt]{\colorbox{white}{%
+								%second box with fixed height to contain image and text
+								\parbox[t][3cm][t]{10cm}{%
+								\flushleft\vskip-4mm% pull up text and sedes
+									%image (taken out of flow)
+									\raisebox{-1.75cm}[0pt][0pt]{
+										\hskip8.7cm% move it to the back of the 10cm parbox
+										\includegraphics[height=1.5cm]{./images/logos/sedes.eps}
+									}%
+									%textbox right aligned
+									\vskip-0.2cm% pull text up to align with sedes
+									\parbox{8.4cm}{
+										\flushright\fontsize{7pt}{7pt}\selectfont\MakeUppercase{\@faculty}\\ %
+										\MakeUppercase{\@campus}\\ %
+										\fontsize{6pt}{6pt}\selectfont
+										\@campusStreet\\ %
+										\MakeUppercase{\@campusCity}, \@campusCountry\\ %
+										tel. \@campusPhone\\ %
+										fax \@campusFax\\ %
+										\@campusEmail\\ %
+										\@facultyWebsite\\ %
+									}
+								}
+							}}
+						\hfill}\vfill}
+				}
+			\vfill
+			\end{minipage}
+			\vfill
+		\end{singlecolumnsection}
+	}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%	This function formats the full preface             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\@ifclassloaded{report}
+{%	Preface definition for article
+	\def\preface{
+		\titleformat{\chapter}[block]
+			{\normalfont\bf\centering}	% format for the full title
+			{\thechapter} %label
+			{1em}	%seperation between label and title body
+			{\MakeUppercase}	%between label and title
+			[] %after
+		\begin{xotherlanguage}{\@coverlanguage}
+				\if@nocover
+					\titlepsimple
+				\else
+					\titlep
+					\clearpage
+					\titlepsimple
+					\clearpage
+				\fi
+		\end{xotherlanguage}%
+		\xselectlanguage{\@documentlanguage}
+		\restoregeometry\clearpage
+		\titleformat{\chapter}[block]
+			{\normalfont\bf}	% format for the full title
+			{\thechapter} %label
+			{1em}	%seperation between label and title body
+			{\MakeUppercase}	%between label and title
+			[\titlerule] %after
+	}
+}
+{%	Preface definition for all other document types
+	\def\preface{
+		\pagenumbering{roman}
+		\begin{xotherlanguage}{\@coverlanguage}
+			\titlep
+			\cleardoublepage
+			\copyrightpage
+			\cleardoublepage
+		\end{xotherlanguage}%
+		\xselectlanguage{\@documentlanguage}
+
+		% overall chapter styling for preface
+		\titleformat{\chapter}[block]
+			{\normalfont\LARGE\bfseries}	% format for the full title
+			{} %label
+			{0em}	%seperation between label and title body
+			{}	%between label and title
+			[]  %after
+
+		\begin{singlecolumnsection}
+			\if@acknowledgements
+				\chapter*{\@acknowledgementslabel}\addcontentsline{toc}{chapter}{\@acknowledgementslabel} %
+				\@acknowledgementsfile
+			\fi
+
+			\if@abstractNL
+				\chapter*{Samenvatting}\addcontentsline{toc}{chapter}{Samenvatting} %
+				\@abstractNLfile
+			\fi
+
+			\if@abstractEN
+				\chapter*{Abstract}\addcontentsline{toc}{chapter}{Abstract} %
+				\@abstractENfile
+			\fi
+
+			\clearpage\phantomsection
+			%\addcontentsline{toc}{chapter}{\contentsname}
+			\tableofcontents
+
+			\if@listoffigurespage
+				\clearpage\phantomsection
+				\addcontentsline{toc}{chapter}{\listfigurename}
+				\listoffigures
+			\fi
+
+			\if@listoftablespage
+				\clearpage\phantomsection
+				\addcontentsline{toc}{chapter}{\listtablename}
+				\listoftables
+			\fi
+
+			\if@listofsymbols
+				\chapter*{\@listofsymbolslabel}\addcontentsline{toc}{chapter}{\@listofsymbolslabel} %
+				\@listofsymbolsfile
+			\fi
+
+			\cleardoublepage
+		\end{singlecolumnsection}
+		\pagenumbering{arabic}
+
+		% overall chapter styling
+		\titleformat{\chapter}[block]
+			{\normalfont\Large}	% format for the full title
+			{\thechapter} %label
+			{1em}	%seperation between label and title body
+			{\MakeUppercase}	%between label and title
+			[\titlerule] %after
+	}
+}
+
+\endinput

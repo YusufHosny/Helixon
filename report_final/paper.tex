@@ -1,0 +1,127 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                      %
+% LaTeX, FIIW thesis template: The IB3/EE3 version                     %
+%                                                                      %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% The document format below can be used for a distributable PDF or when you print single sided
+%\documentclass[11pt,a4paper,oneside]{book}
+% If you want to print your thesis double-sided on paper, you can use the settings below
+%\documentclass[11pt,a4paper]{book}
+
+% For Campus GroepT use the two-column paper layout
+\documentclass[11pt,a4paper,twocolumn]{report}
+
+
+%%% Load the FIIW template
+%%% You should specify your campus : groept, denayer, gent, geel and brugge are implemented
+%%% You can hide parts of the preface by specifying some option:
+%%% e.g. : noacknowledgements, noabstract, nosamenvatting, nolistoffigures, nolistoftables, nolistofsymbols
+\usepackage[groept]{fiiw}
+
+
+%%% Load some other basic packages
+\usepackage[dutch,english]{babel}
+\usepackage[latin1]{inputenc}           % needed if you have special characters in your text
+%\usepackage[utf8]{inputenc}            % if your text is encoded in utf8 (and not latin1) use this package
+\usepackage{hyperref} 
+\usepackage{natbib}						% used for cites from the bib file in your text
+\usepackage{listings}             		% used for displaying source code (java, c, matlab,...)
+\usepackage{verbatim}					% used for inline formatting of source code, terminal commands, ...
+\usepackage{textcomp}					% symbols
+\usepackage{url}						% add url's with \url{http://}
+\usepackage{amsmath}					% extend math features
+\usepackage[final]{pdfpages}            % include pdf's e.g.: a paper or a poster
+\usepackage{float}                      % adds [H] to figure env. Puts a figure where you want it e.g. \begin{figure}[H]
+\usepackage{longtable}					% used for tables that strech over muliple pages
+\usepackage[toc, acronyms]{glossaries}	% used by the list of symbols
+\usepackage{bookmark}
+
+% generate lorum ipsim text in template
+\usepackage{lipsum}
+
+%%% configure layout for source code listings
+%\definecolor{keyword}{rgb}{0.3,0.3,0.3}
+%\definecolor{string}{rgb}{0.7,0.7,0.7}
+\lstset{
+	language = Java,
+	basicstyle=\scriptsize\ttfamily,
+	numbers=left,
+	numberstyle=\tiny,
+	tabsize=2,
+	showspaces=false,
+	frame=single,
+	breaklines=true,
+%	keywordstyle=\bfseries\color{keyword},
+%	stringstyle=\color{string},
+	extendedchars=true,
+	xleftmargin=0.3\linewidth,
+	xrightmargin=0.1\linewidth
+}
+
+%%% abstract, acknowledgements and list of symbols are located in another file
+%%% list the filenames where you created them. If you omit one of these the page
+%%% is not displayed
+\acknowledgementsfile{chapters/acknowledgements}	% .tex file with acknowledgements
+\abstractENfile{chapters/abstract}					% .tex file with EN abstract (in English)
+%\abstractNLfile{chapters/samenvatting}				% .tex file with NL abstract (in Dutch, for Dutch students only)
+\listofsymbolsfile{chapters/symbols}				% .tex file with list of symbols
+
+%%% select the main language of your document (default = dutch)
+%%% (you can select a different language for the cover page below)
+%\documentlanguage{dutch}
+\documentlanguage{english}
+
+%%% if the cover page needs to be a different language as the main document, this can be set
+%%% if you do not specify a coverlanguage, the cover will have the same langugage as the document
+%\coverlanguage{dutch}
+
+%%% information about you, your thesis, supervisor, ...
+\program{Engineering Technology: Electronics and ICT Engineering}
+\title{Engineering Experience 3 - Electronics and ICT Engineering}
+\subtitle{Diamond Heist: Designing an Electronic Modular Escape Room }
+\firstnameA{Christiana}
+\lastnameA{Galani}
+\firstnameB{Dunia}
+\lastnameB{Tornila Jichi}
+% BEGIN EE3 more names in a team
+\firstnameC{Lucie}
+\lastnameC{Mathieu}
+\firstnameD{Jolan}
+\lastnameD{Serruys}
+\firstnameE{Pieter}
+\lastnameE{Van Acker}
+% END EE3 more names in a team
+\academicyear{2024}
+% Supervisor is your coach
+\supervisor{G}
+\supervisorEmail{g}
+
+
+\begin{document}
+
+	\preface
+	\input{chapters/01-introduction}
+	\input{chapters/02-design}
+	\input{chapters/03-implementation}
+	\input{chapters/04-results}
+	\input{chapters/05-discussion}
+	\input{chapters/06-conclusion}
+
+
+	%%% Bibliography: references. included from bibliography.bib
+	%%% Only referenced items are displayed in the final document
+	%\nocite{*}			% if you also want to display the unreferenced items in your bibliografy uncomment this
+	\bibliographystyle{ieeetr}
+	\bibliography{bibliography}
+
+	%%% appendices
+    \appendix
+    \appendixpage
+	\input{chapters/appendix1}
+
+	%%% Apendix from other pdf
+%	\chapter{Poster}
+%	\includepdf{poster.pdf}
+
+	\backcover
+\end{document}
