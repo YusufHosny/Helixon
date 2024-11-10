@@ -1,5 +1,7 @@
-char ssid[] = "wifiFromLibanon";
-char pass[] = "libanonnumba1";
+char ssid[] = "wifiFromNapoli";
+char pass[] = "forzanapo";
+// char ssid[] = "wifiFromLibanon";
+// char pass[] = "libanonnumba1";
 // char ssid[] = "RACIALLY MOTIVATED WIFI";
 // char pass[] = "amogus12";
 
