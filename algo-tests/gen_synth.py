@@ -131,7 +131,7 @@ alpha = 1.16e-4
 ps = p0 * np.exp(-alpha*gt_pos[:, 2])
 
 # add noise
-percent_gaussian = .05 # amount of noise in %
+percent_gaussian = .2 # amount of noise in %
 mean_acc = 0.01177*percent_gaussian
 std_acc = (0.00314)*percent_gaussian
 mean_gyro = 0.001745*percent_gaussian
