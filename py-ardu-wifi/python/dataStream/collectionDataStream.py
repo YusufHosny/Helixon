@@ -52,8 +52,9 @@ class CollectionDataStream(DataStream):
                         d.pressure = data_entry_struct[20]              
                         
                         dm.write(d)
-                        if tprev is not None:
-                            time.sleep((d.ts - tprev)*1e-6)
-                        tprev = d.ts
+                        # if tprev is not None:
+                        #     time.sleep((d.ts - tprev)*1e-6 + 10e-3)
+                        # tprev = d.ts
+                        time.sleep(1./50.)
                     except:
                         pass
