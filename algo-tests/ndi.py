@@ -7,7 +7,7 @@ from scipy.spatial.transform import Rotation
 from metrics import *
 
 # get data from hdf5
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, gt_timestamp, gt_position, gt_orientation = readHDF5('synthetic')
+raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, gt_timestamp, gt_position, gt_orientation = readHDF5('spiral2')
 
 # convenience
 X, Y, Z = 0, 1, 2
@@ -21,14 +21,21 @@ ts = np.array(raw_timestamp)
 raw_t = ts.reshape((-1, 1))
 gt_t = np.array(gt_timestamp).reshape((-1, 1))
 
+
 # rotate acceleration to global coords
 accel = np.zeros_like(araw)
-for i, rpyi in enumerate(gt_orientation):
-    rot = Rotation.from_euler('xyz', rpyi, degrees=True).inv()
+for i, orientation in enumerate(raw_rpy):
+    
+    # check if quat or euler
+    if orientation.shape[-1] == 4:
+        rot = Rotation.from_quat(orientation).inv()
+    else:
+        rot = Rotation.from_euler('xyz', orientation, degrees=True).inv()
     accel[i] = rot.apply(araw[i])
 
 # remove gravity vector
-accel[:, Z] += 9.81
+# minus for real data, since z axis is flipped
+accel[:, Z] -= 9.81
 
 # dead reckoning ndi on synth
 pos = np.zeros((N, 3))
@@ -41,7 +48,6 @@ for i in range(1, N):
 # get error and print
 timestamped_est = np.concatenate((raw_t , pos), axis=1)
 timestamped_gt  = np.concatenate((gt_t, gt_position), axis=1)
-print(timestamped_est.shape, timestamped_gt.shape)
 
 ate, rte = compute_ate_rte(timestamped_est, timestamped_gt, 10)
 print(f'Absolute Trajectory Error: {ate}\nRelative Trajectory Error: {rte}')

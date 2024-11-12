@@ -4,31 +4,49 @@ import matplotlib.pyplot as plt
 from hlxon_hdf5io import *
 from scipy.spatial.transform import Rotation
 from typing import Callable, Self
+from metrics import *
 
 # get data from hdf5
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, gt_timestamp, gt_position, gt_orientation = readHDF5('synthetic')
+raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, gt_timestamp, gt_position, gt_orientation = readHDF5('spiral2')
+
+p0 = raw_pressure[np.argmax(np.array(raw_pressure) > 101325)]
+raw_pressure = [p if p > 101325 else p0 for p in raw_pressure]
 
 # convenience
 X, Y, Z = 0, 1, 2
 N = len(raw_timestamp)
+
+# normalize gt pos and orientation
+gt_position = np.array(gt_position)
+gt_position -= gt_position[0]
+gt_orientation = np.array(gt_orientation)
+gt_orientation -= gt_orientation[0]
 
 # get sensor data
 araw = np.array(raw_9dof[:, :3])
 gyro = np.array(raw_9dof[:, 3:6])
 magn = np.array(raw_9dof[:, 6:])
 pres = np.array(raw_pressure).reshape((-1, 1))
-p0 = 101325 # Pa
 alpha = 1.16e-4
 ts = raw_timestamp
 
 # rotate acceleration to global coords
 accel = np.zeros_like(araw)
-for i, rpyi in enumerate(gt_orientation):
-    rot = Rotation.from_euler('xyz', rpyi, degrees=True).inv()
+for i, orientation in enumerate(raw_rpy):
+    
+    # check if quat or euler
+    if orientation.shape[-1] == 4:
+        rot = Rotation.from_quat(orientation).inv()
+    else:
+        rot = Rotation.from_euler('xyz', orientation, degrees=True).inv()
     accel[i] = rot.apply(araw[i])
 
 # remove gravity vector
-accel[:, Z] += 9.81
+# minus for real data, since z axis is flipped
+accel[:, Z] -= 9.81
+
+# normalize accelerations
+accel -= accel.mean(axis=0, dtype=np.float64)
 
 # --------------------------------
 # kalman filter
@@ -70,7 +88,7 @@ class HelixonKalmanFilter:
     def run_offlne(self: Self, us: np.ndarray, ys: np.ndarray) -> np.ndarray:
         pos = np.zeros((N, 3))
         for i in range(1, N):
-            dt = ts[i]-ts[i-1]
+            dt = (ts[i]-ts[i-1])*10e-6
             kf.predict(us[i], dt)
             kf.update(ys[i])
             pos[i] = kf.xhat[:3].reshape((3,))
@@ -79,11 +97,11 @@ class HelixonKalmanFilter:
 
 
 # P (measurement cov mat)
-P = np.identity(9) * 0.0005
+P = np.identity(9) * 0.05
 # Q (process noise)
-Q = np.identity(9) * 0.0005
+Q = np.identity(9) * 0.05
 # R (measurement noise)
-R = np.identity(1) * .0
+R = np.identity(1) * .001
 # H (measurement matrix)
 H = np.array([
     [0., 0., 1., 0., 0., 0., 0., 0., 0.], 
@@ -99,8 +117,8 @@ def getA(dt: float):
 [0., 0., 0.,    1., 0., 0.,    0., 0., 0. ],  # r
 [0., 0., 0.,    0., 1., 0.,    0., 0., 0. ],  # p
 [0., 0., 0.,    0., 0., 1.,    0., 0., 0. ],  # y
-[0., 0., 0.,    0., 0., 0.,    1., 0., 0. ],  # vx
-[0., 0., 0.,    0., 0., 0.,    0., 1., 0. ],  # vy
+[0., 0., 0.,    0., 0., 0.,    np.exp(-50*dt), 0., 0. ],  # vx decay velocities over time
+[0., 0., 0.,    0., 0., 0.,    0., np.exp(-50*dt), 0. ],  # vy
 [0., 0., 0.,    0., 0., 0.,    0., 0., 1. ],  # vz
     ])
 
@@ -131,9 +149,37 @@ us = np.concatenate((accel, gyro), axis=1).reshape((-1, 6, 1))
 
 pos = kf.run_offlne(us, ys)
 
-# plot synth ndi and gt
-fig = plt.figure()
-ax = plt.axes(projection='3d')
-ax.plot3D(pos[:, 0], pos[:, 1], pos[:, 2], 'blue')
-ax.plot3D(gt_position[:, 0], gt_position[:, 1], gt_position[:, 2], 'gray')
-plt.show()
+
+# PLOTTING
+# TARGET = 'height'
+TARGET = 'all'
+
+if TARGET == 'height':
+    # ATE and RTE for heights only
+    ateKALMAN, rteKALMAN = compute_ate_rte(np.concatenate((np.array(ts).reshape((-1, 1)), pos*np.array([0, 0, 1])), axis=1), 
+                                        np.concatenate((np.array(gt_timestamp).reshape((-1, 1)), gt_position*np.array([0, 0, 1])), axis=1))
+
+    ateH, rteH = compute_ate_rte(np.concatenate((np.array(ts).reshape((-1, 1)), heights*np.array([0, 0, 1])), axis=1), 
+                            np.concatenate((np.array(gt_timestamp).reshape((-1, 1)), gt_position*np.array([0, 0, 1])), axis=1))
+
+    print(f'kalman filter ate: {ateKALMAN} rte: {rteKALMAN}\nheights ate: {ateH} rte: {rteH}')
+
+    # plot heights as functions of time
+    fig = plt.figure()
+    ax = plt.axes(projection='3d')
+    ax.plot3D(np.zeros_like(pos[:, 0]) + 1, ts, pos[:, 2], 'blue')
+    ax.plot3D(np.zeros_like(heights.flatten()) + 2, ts, heights.flatten(), 'red')
+    ax.plot3D(np.zeros_like(gt_position[:, 0]), gt_timestamp, gt_position[:, 2], 'gray')
+    plt.show()
+
+elif TARGET == 'all':
+    ateKALMAN, rteKALMAN = compute_ate_rte(np.concatenate((np.array(ts).reshape((-1, 1)), pos), axis=1), 
+                                        np.concatenate((np.array(gt_timestamp).reshape((-1, 1)), gt_position), axis=1))
+    print(f'kalman filter ate: {ateKALMAN} rte: {rteKALMAN}')
+
+    # plot positions as functions of time
+    fig = plt.figure()
+    ax = plt.axes(projection='3d')
+    ax.plot3D(pos[:20, 0], pos[:20, 1], pos[:20, 2], 'blue')
+    ax.plot3D(gt_position[:, 0], gt_position[:, 1], gt_position[:, 2], 'gray')
+    plt.show()
