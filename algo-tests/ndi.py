@@ -17,7 +17,9 @@ N = len(raw_timestamp)
 araw = np.array(raw_9dof[:, :3])
 gyro = np.array(raw_9dof[:, 3:6])
 magn = np.array(raw_9dof[:, 6:])
-ts = raw_timestamp
+ts = np.array(raw_timestamp)
+raw_t = ts.reshape((-1, 1))
+gt_t = np.array(gt_timestamp).reshape((-1, 1))
 
 # rotate acceleration to global coords
 accel = np.zeros_like(araw)
@@ -36,8 +38,12 @@ for i in range(1, N):
     vi += accel[i]*dt
     pos[i] = pos[i-1] + vi*dt + 0.5*accel[i]*dt**2
 
-# get error and print    
-ate, rte = compute_ate_rte(pos, gt_position, 10)
+# get error and print
+timestamped_est = np.concatenate((raw_t , pos), axis=1)
+timestamped_gt  = np.concatenate((gt_t, gt_position), axis=1)
+print(timestamped_est.shape, timestamped_gt.shape)
+
+ate, rte = compute_ate_rte(timestamped_est, timestamped_gt, 10)
 print(f'Absolute Trajectory Error: {ate}\nRelative Trajectory Error: {rte}')
 
 # plot synth ndi and gt
