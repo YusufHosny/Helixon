@@ -16,7 +16,7 @@ What it does:
     using the orientation the magnetometer data will be calculated
     and using the orietation the generated data will be transformed into the sensors coordinate space
 
-output csv columns:
+output columns:
     - timestamp:    (double seconds) time in seconds
     - gt_posx:      (double meters) ground truth x position
     - gt_posy:      (double meters) ground truth y position
