@@ -127,17 +127,7 @@ def labelAndStore(dataset_name):
     raw_timestamps = filtered_raw_data[:, 0] # Assuming timestamp is the first column in filtered_raw_data
     filtered_gt_data[:, 0] = (filtered_gt_data[:, 0] * 1e6).astype(int)
 
-    # Synchronize filtered_raw_data with filtered_gt_data by finding the closest timestamps
-    synchronized_raw_data = []
-    for gt_time in filtered_gt_data[:, 0]:
-        # Find the index of the closest timestamp in raw_timestamps
-        closest_index = (np.abs(raw_timestamps - gt_time)).argmin()
-        synchronized_raw_data.append(filtered_raw_data[closest_index])
-
-    # Convert synchronized_raw_data to a numpy array
-    synchronized_raw_data = np.array(synchronized_raw_data)
-
-    storeAsHDF5(dataset_name, synchronized_raw_data, filtered_gt_data)
+    storeAsHDF5(dataset_name, filtered_raw_data, filtered_gt_data)
 
     
 
