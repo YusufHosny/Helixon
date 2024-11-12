@@ -1,5 +1,5 @@
 [project]
-name = "HLXONHDF5IO"
+name = "hlxon_hdf5io"
 version = "0.0.1"
 authors = [
   { name="Yusuf Hussein", email="yusuf.hussein@student.kuleuven.be" },
@@ -14,7 +14,3 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-
-[project.urls]
-Homepage = "https://github.com/pypa/sampleproject"
-Issues = "https://github.com/pypa/sampleproject/issues"
