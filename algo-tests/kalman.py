@@ -7,16 +7,16 @@ from typing import Callable, Self
 from metrics import *
 
 # get data from hdf5
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, gt_timestamp, gt_position, gt_orientation = readHDF5('spiral2')
+raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, gt_timestamp, gt_position, gt_orientation = readHDF5('synthetic')
 
-p0 = raw_pressure[np.argmax(np.array(raw_pressure) > 101325)]
-raw_pressure = [p if p > 101325 else p0 for p in raw_pressure]
+p0 = raw_pressure[np.argmax(np.array(raw_pressure) > 1e5)]
+raw_pressure = [p if p > 1e5 else p0 for p in raw_pressure]
 
 # convenience
 X, Y, Z = 0, 1, 2
 N = len(raw_timestamp)
 
-# normalize gt pos and orientation
+# remove offsets gt pos and orientation
 gt_position = np.array(gt_position)
 gt_position -= gt_position[0]
 gt_orientation = np.array(gt_orientation)
@@ -28,7 +28,7 @@ gyro = np.array(raw_9dof[:, 3:6])
 magn = np.array(raw_9dof[:, 6:])
 pres = np.array(raw_pressure).reshape((-1, 1))
 alpha = 1.16e-4
-ts = raw_timestamp
+ts = np.array(raw_timestamp)*1e-6
 
 # rotate acceleration to global coords
 accel = np.zeros_like(araw)
@@ -42,11 +42,11 @@ for i, orientation in enumerate(raw_rpy):
     accel[i] = rot.apply(araw[i])
 
 # remove gravity vector
-# minus for real data, since z axis is flipped
+# minus since z axis is flipped
 accel[:, Z] -= 9.81
 
-# normalize accelerations
-accel -= accel.mean(axis=0, dtype=np.float64)
+# remove offset from accelerations
+#accel -= accel.mean(axis=0, dtype=np.float64)
 
 # --------------------------------
 # kalman filter
@@ -72,7 +72,7 @@ class HelixonKalmanFilter:
         self.H = H
         self.xhat = np.zeros((9, 1))
 
-    def predict(self: Self, input: np.ndarray ,dt: float):
+    def predict(self: Self, input: np.ndarray, dt: float):
         self.A = self.getA(dt)
         self.B = self.getB(dt)
         
@@ -88,7 +88,8 @@ class HelixonKalmanFilter:
     def run_offlne(self: Self, us: np.ndarray, ys: np.ndarray) -> np.ndarray:
         pos = np.zeros((N, 3))
         for i in range(1, N):
-            dt = (ts[i]-ts[i-1])*10e-6
+            dt = (ts[i]-ts[i-1])
+            print(dt)
             kf.predict(us[i], dt)
             kf.update(ys[i])
             pos[i] = kf.xhat[:3].reshape((3,))
@@ -97,11 +98,11 @@ class HelixonKalmanFilter:
 
 
 # P (measurement cov mat)
-P = np.identity(9) * 0.05
+P = np.identity(9) * 0.5
 # Q (process noise)
-Q = np.identity(9) * 0.05
+Q = np.identity(9) * 0.5
 # R (measurement noise)
-R = np.identity(1) * .001
+R = np.identity(1) * .01
 # H (measurement matrix)
 H = np.array([
     [0., 0., 1., 0., 0., 0., 0., 0., 0.], 
@@ -117,8 +118,8 @@ def getA(dt: float):
 [0., 0., 0.,    1., 0., 0.,    0., 0., 0. ],  # r
 [0., 0., 0.,    0., 1., 0.,    0., 0., 0. ],  # p
 [0., 0., 0.,    0., 0., 1.,    0., 0., 0. ],  # y
-[0., 0., 0.,    0., 0., 0.,    np.exp(-50*dt), 0., 0. ],  # vx decay velocities over time
-[0., 0., 0.,    0., 0., 0.,    0., np.exp(-50*dt), 0. ],  # vy
+[0., 0., 0.,    0., 0., 0.,    1., 0., 0. ],  # vx
+[0., 0., 0.,    0., 0., 0.,    0., 1., 0. ],  # vy
 [0., 0., 0.,    0., 0., 0.,    0., 0., 1. ],  # vz
     ])
 
@@ -180,6 +181,6 @@ elif TARGET == 'all':
     # plot positions as functions of time
     fig = plt.figure()
     ax = plt.axes(projection='3d')
-    ax.plot3D(pos[:20, 0], pos[:20, 1], pos[:20, 2], 'blue')
+    ax.plot3D(pos[:, 0], pos[:, 1], pos[:, 2], 'blue')
     ax.plot3D(gt_position[:, 0], gt_position[:, 1], gt_position[:, 2], 'gray')
     plt.show()

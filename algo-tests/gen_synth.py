@@ -42,7 +42,7 @@ output columns:
 # define time and samples
 total_time          = 45 # sec
 fs                  = 10 # Hz
-number_samples_gt   = 45*fs # ground truth sample count (positions and orientations)
+number_samples_gt   = total_time*fs # ground truth sample count (positions and orientations)
 N                   = number_samples_gt # for convenience
 X, Y, Z             = 0, 1, 2 # for convenience
 
@@ -92,7 +92,7 @@ for i in range(1, N):
     dv = (vraw[i]-vraw[i-1])
     dt = (t[i]-t[i-1])
     araw[i] += dv/dt
-araw[:, Z] -= 9.81
+araw[:, Z] += 9.81 # add gravity bc real sensor has z axis flipped
 
 # transform accelerations to device/sensor coord space
 accel = np.zeros_like(gt_pos)
@@ -156,7 +156,7 @@ for i in range(N):
     magn[i, Y] += np.random.normal(mean_magnet, std_magnet)
     magn[i, Z] += np.random.normal(mean_magnet, std_magnet)
 
-data = np.concatenate( (ts,
+data = np.concatenate( ((ts*1e6).astype(np.int64),
                 accel[:, X].reshape(-1, 1),
                 accel[:, Y].reshape(-1, 1),
                 accel[:, Z].reshape(-1, 1),
@@ -168,7 +168,7 @@ data = np.concatenate( (ts,
                 magn[:, Z].reshape(-1, 1),
                 roll, pitch, yaw, tbno, tbmp, ps.reshape(-1, 1)),
                     axis=1)
-gtdata = np.concatenate( (ts, \
+gtdata = np.concatenate( ((ts*1e6).astype(np.int64), \
                 gt_pos[:, 0].reshape(-1, 1), 
                 gt_pos[:, 1].reshape(-1, 1), 
                 gt_pos[:, 2].reshape(-1, 1), 
