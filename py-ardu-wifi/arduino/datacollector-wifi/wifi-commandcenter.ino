@@ -1,4 +1,5 @@
 #include "wifi-core.h"
+#include "types.h"
 
 void startCommandCenter() {
   client = server.available();

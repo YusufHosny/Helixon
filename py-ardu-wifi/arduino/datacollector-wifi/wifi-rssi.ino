@@ -18,12 +18,12 @@ void scanRSSIs() {
 
 
 void fillRssiData() {
-  delay(5000);
   rssiCnt = WiFi.scanNetworks();
   for(int i = 0; i < 25 && i < rssiCnt; i++) {
     RSSIs[i] = WiFi.RSSI(i);
     char ssidBuf[20] = {}; 
     strncpy(ssidBuf, WiFi.SSID(i), 20);
-    for(int j = 0; j < 20; j++) SSIDs[i][j] = ssidBuf[j];
+    for(int j = 0; j < 19; j++) SSIDs[i][j] = ssidBuf[j];
+    SSIDs[i][19] = '\0';
   }
 }
