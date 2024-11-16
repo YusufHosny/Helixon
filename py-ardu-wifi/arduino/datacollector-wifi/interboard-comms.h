@@ -2,15 +2,12 @@
 #define INTERBOARDH
 
 #define RECEIVER
-//#define SENDER
-
-#include "wifi-core.h"
-#include "interboard-comms.h"
+// #define SENDER
 
 void setup_i2c();
 
 // SENDER or RECEIVER has to be defined
-#ifdef RECEIVERSPI
+#ifdef RECEIVER
 
 #endif // RECEIVER
 #ifdef SENDER

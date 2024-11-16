@@ -1,5 +1,5 @@
-#ifndef TYPESH
-#define TYPESH
+#ifndef HLXTYPESH
+#define HLXTYPESH
 
 struct DataEntry { // size 128bytes
   unsigned long microsT; // 4 bytes + 4 padding

@@ -1,11 +1,10 @@
 #include <Wire.h>
-
+#include "interboard-comms.h"
 #include "wifi-core.h"
 #include "sensors.h"
 #include "types.h"
-#include "spi-comms.h"
 
-#ifdef RECEIVERSPI
+#ifdef RECEIVER
 
 void setup() {
   delay(2000);
@@ -18,8 +17,10 @@ void setup() {
   startTCPServer();
   printWifiData();
 
-  setup_bno();
-  setup_bmp();
+  setup_i2c();
+
+  // setup_bno();
+  // setup_bmp();
 }
 
 void loop() {
@@ -27,7 +28,7 @@ void loop() {
 }
 
 #endif
-#ifdef SENDERSPI
+#ifdef SENDER
 
 void setup() {
   delay(2000);
@@ -35,11 +36,11 @@ void setup() {
 
   enable_WiFi();
 
-  setup_spi();
+  setup_i2c();
 }
 
 void loop() {   
-  sendSpiRssis();
+  sendI2CRssis();
 }
 
 #endif
