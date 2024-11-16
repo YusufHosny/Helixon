@@ -7,7 +7,7 @@ from typing import Callable, Self
 from metrics import *
 
 # get data from hdf5
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, gt_timestamp, gt_position, gt_orientation = readHDF5('synthetic')
+raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, gt_timestamp, gt_position, gt_orientation = readHDF5('spiral2')
 
 p0 = raw_pressure[np.argmax(np.array(raw_pressure) > 1e5)]
 raw_pressure = [p if p > 1e5 else p0 for p in raw_pressure]
@@ -29,6 +29,7 @@ magn = np.array(raw_9dof[:, 6:])
 pres = np.array(raw_pressure).reshape((-1, 1))
 alpha = 1.16e-4
 ts = np.array(raw_timestamp)*1e-6
+gt_timestamp = np.array(gt_timestamp)*1e-6
 
 # rotate acceleration to global coords
 accel = np.zeros_like(araw)
@@ -57,9 +58,7 @@ State Vector
 format:
     - [0:3] positions x y z (meters global coords)
     - [3:6] orientations roll pitch yaw (degrees)
-    - [6:9] accelerations x y z (m/s^2 global coords)
-    - [9:12] velocities x y z (m/s global coords)
-    - [12:15] angular velocities roll pitch yaw (rad/s global coords)
+    - [6:9] velocities x y z (m/s global coords)
 """
 class HelixonKalmanFilter:
 
@@ -89,7 +88,6 @@ class HelixonKalmanFilter:
         pos = np.zeros((N, 3))
         for i in range(1, N):
             dt = (ts[i]-ts[i-1])
-            print(dt)
             kf.predict(us[i], dt)
             kf.update(ys[i])
             pos[i] = kf.xhat[:3].reshape((3,))
@@ -153,7 +151,7 @@ pos = kf.run_offlne(us, ys)
 
 # PLOTTING
 # TARGET = 'height'
-TARGET = 'all'
+TARGET = 'height'
 
 if TARGET == 'height':
     # ATE and RTE for heights only
