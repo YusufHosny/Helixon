@@ -1,32 +1,26 @@
 #include "wifi-core.h"
 #include "interboard-comms.h"
-#include <Wire.h>
 
-// SENDER or RECEIVER has to be defined in header
-#ifdef RECEIVER
-
-void setup_i2c(){
-  Wire.begin(70); 
-  Wire.onReceive(receiveEvent);
+void setup_interboard(){
+  Serial1.begin(115200);
 }
+
+// SENDER or MASTER has to be defined in header
+#ifdef MASTER
 
 int ssidIndex = 0;
 int charIndex = 0;
-bool first = true;
 byte rssiByte[4];
 int rssiByteCount = 0;
 int byteCnt = 0;
-void receiveEvent(int howmany){
-
-  while (Wire.available()){
-    byte data = Wire.read();
-    Serial.write(data);
+void readInterboardRssis() {
+  while (Serial1.available()) {
+    byte data = Serial1.read();
     byteCnt++;
 
-    if(first) {
+    if(byteCnt == 1) {
       rssiCnt = data;
       Serial.println(rssiCnt);
-      first = false;
     }
     else if (charIndex < 20){
         SSIDs[ssidIndex][charIndex++] = data;
@@ -40,42 +34,32 @@ void receiveEvent(int howmany){
         rssiByteCount = 0;
 
         if(ssidIndex == 25) {
-          Serial.print("total bytes: "); Serial.println(byteCnt);
+          Serial.println(byteCnt);
           for(int i = 0; i < (rssiCnt > 25 ? 25 : rssiCnt); i++) {
             Serial.print("(Reciever)"); Serial.print("SSID ("); Serial.print(i); Serial.print("): "); Serial.print(SSIDs[i]);
             Serial.print("RSSI: "); Serial.print(RSSIs[i]);
             Serial.println("dB");
           }
+          byteCnt = 0;
           ssidIndex = 0;
-          first = true;
         }
       }
     }
   }
 }
 
-#endif // RECEIVER
-#ifdef SENDER
+#endif // MASTER
+#ifdef SLAVE
 
-void setup_i2c(){
-  Wire.begin(); // Join I2C bus with address
-}
-
-void sendI2CRssis() {
-  // Populate SSIDs and RSSIs using fillRssiData
-  fillRssiData();
-
-  Wire.beginTransmission(70);
-  
-  Wire.write((byte *)&rssiCnt,1);
+void sendInterboardRssis() {
+  Serial1.write((byte *)&rssiCnt, 1);
   // Send SSID data
   for (int i = 0; i < 25; i++) {
-    Wire.write(SSIDs[i], 20);
+    Serial1.write(SSIDs[i], 20);
     // Send RSSI data
-    Wire.write((byte *)&(RSSIs[i]), 4);
+    Serial1.write((byte *)&(RSSIs[i]), 4);
   }
-
-  Wire.endTransmission();
+  
   Serial.println(rssiCnt);
   for(int i = 0; i < rssiCnt; i++) {
     Serial.print("SSID: "); Serial.print(SSIDs[i]);
@@ -83,4 +67,4 @@ void sendI2CRssis() {
     Serial.println("dB");
   }
 }
-#endif // SENDER
+#endif // SLAVE

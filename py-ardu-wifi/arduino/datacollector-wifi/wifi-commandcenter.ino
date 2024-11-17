@@ -25,7 +25,7 @@ void startCommandCenter() {
         if(strncmp(request, "data", 4) == 0) {
           // get data from sensors
           DataEntry d = {};
-          //fillData(&d);
+          fillData(&d);
 
           // send data
           client.write((byte *) &d, sizeof(d));

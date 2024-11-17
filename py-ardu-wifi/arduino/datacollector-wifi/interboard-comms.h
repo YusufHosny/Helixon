@@ -1,19 +1,21 @@
 #ifndef INTERBOARDH
 #define INTERBOARDH
 
-//#define RECEIVER
-#define SENDER
+#define MASTER
+//#define SLAVE
 
-void setup_i2c();
+void setup_interboard();
 
-// SENDER or RECEIVER has to be defined
-#ifdef RECEIVER
+// SLAVE or MASTER has to be defined
+#ifdef MASTER
 
-#endif // RECEIVER
-#ifdef SENDER
+void readInterboardRssis();
 
-void sendI2CRssis();
+#endif // MASTER
+#ifdef SLAVE
 
-#endif // SENDER
+void sendInterboardRssis();
+
+#endif // SLAVE
 
 #endif

@@ -1,10 +1,10 @@
 #include <Wire.h>
 #include "interboard-comms.h"
 #include "wifi-core.h"
-//#include "sensors.h"
+#include "sensors.h"
 #include "types.h"
 
-#ifdef RECEIVER
+#ifdef MASTER
 
 void setup() {
   delay(2000);
@@ -17,18 +17,18 @@ void setup() {
   startTCPServer();
   printWifiData();
 
-  setup_i2c();
+  setup_interboard();
 
-  // setup_bno();
-  // setup_bmp();
+  //setup_bno();
+  //setup_bmp();
 }
 
 void loop() {
-  startCommandCenter();
+  readInterboardRssis();
 }
 
 #endif
-#ifdef SENDER
+#ifdef SLAVE
 
 void setup() {
   delay(2000);
@@ -36,12 +36,13 @@ void setup() {
 
   enable_WiFi();
 
-  setup_i2c();
+  setup_interboard();
 }
 
 void loop() {   
-  sendI2CRssis();
-  delay(5000);
+  // nothing
+  fillRssiData();
+  sendInterboardRssis();
 }
 
 #endif
