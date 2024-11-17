@@ -23,7 +23,6 @@ void fillRssiData() {
     RSSIs[i] = WiFi.RSSI(i);
     char ssidBuf[20] = {}; 
     strncpy(ssidBuf, WiFi.SSID(i), 20);
-    for(int j = 0; j < 19; j++) SSIDs[i][j] = ssidBuf[j];
-    SSIDs[i][19] = '\0';
+    for(int j = 0; j < 20; j++) SSIDs[i][j] = ssidBuf[j];
   }
 }

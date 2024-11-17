@@ -1,8 +1,8 @@
 #ifndef INTERBOARDH
 #define INTERBOARDH
 
-#define RECEIVER
-// #define SENDER
+//#define RECEIVER
+#define SENDER
 
 void setup_i2c();
 

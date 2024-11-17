@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include "interboard-comms.h"
 #include "wifi-core.h"
-#include "sensors.h"
+//#include "sensors.h"
 #include "types.h"
 
 #ifdef RECEIVER
@@ -41,6 +41,7 @@ void setup() {
 
 void loop() {   
   sendI2CRssis();
+  delay(5000);
 }
 
 #endif
