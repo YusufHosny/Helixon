@@ -19,8 +19,8 @@ void setup() {
 
   setup_interboard();
 
-  //setup_bno();
-  //setup_bmp();
+  setup_bno();
+  setup_bmp();
 }
 
 void loop() {

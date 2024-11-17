@@ -8,43 +8,54 @@ void setup_interboard(){
 // SENDER or MASTER has to be defined in header
 #ifdef MASTER
 
-int ssidIndex = 0;
-int charIndex = 0;
-byte rssiByte[4];
-int rssiByteCount = 0;
 int byteCnt = 0;
+byte iboardbuf[601] = {}; // temporary data buffer
 void readInterboardRssis() {
   while (Serial1.available()) {
-    byte data = Serial1.read();
-    byteCnt++;
+    // read data into temp buffer
+    iboardbuf[byteCnt++] = Serial1.read();
 
-    if(byteCnt == 1) {
-      rssiCnt = data;
-      Serial.println(rssiCnt);
-    }
-    else if (charIndex < 20){
-        SSIDs[ssidIndex][charIndex++] = data;
-    }
-    else {
-      rssiByte[rssiByteCount++] = data;
+    // once full data packet has been read
+    if(byteCnt == 601) {
+      int ssidIndex = 0;
+      int charIndex = 0;
+      byte rssiByte[4];
+      int rssiByteCount = 0;
 
-      if(rssiByteCount == 4) {
-        RSSIs[ssidIndex++] = *((int32_t *)rssiByte);
-        charIndex = 0;
-        rssiByteCount = 0;
+      for(int i = 0; i < 601; i++) {
+        byte data = iboardbuf[i];
 
-        if(ssidIndex == 25) {
-          Serial.println(byteCnt);
-          for(int i = 0; i < (rssiCnt > 25 ? 25 : rssiCnt); i++) {
-            Serial.print("(Reciever)"); Serial.print("SSID ("); Serial.print(i); Serial.print("): "); Serial.print(SSIDs[i]);
-            Serial.print("RSSI: "); Serial.print(RSSIs[i]);
-            Serial.println("dB");
+        if(i == 0) {
+          rssiCnt = data;
+          Serial.println(rssiCnt);
+        }
+        else if (charIndex < 20){
+            SSIDs[ssidIndex][charIndex++] = data;
+        }
+        else {
+          rssiByte[rssiByteCount++] = data;
+
+          if(rssiByteCount == 4) {
+            RSSIs[ssidIndex++] = *((int32_t *)rssiByte);
+            charIndex = 0;
+            rssiByteCount = 0;
+
+            if(ssidIndex == 25) {
+              Serial.println(byteCnt);
+              for(int i = 0; i < (rssiCnt > 25 ? 25 : rssiCnt); i++) {
+                Serial.print("(Reciever)"); Serial.print("SSID ("); Serial.print(i); Serial.print("): "); Serial.print(SSIDs[i]);
+                Serial.print("RSSI: "); Serial.print(RSSIs[i]);
+                Serial.println("dB");
+              }
+              byteCnt = 0;
+              ssidIndex = 0;
+            }
           }
-          byteCnt = 0;
-          ssidIndex = 0;
         }
       }
     }
+
+    
   }
 }
 
