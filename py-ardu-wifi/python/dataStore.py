@@ -18,17 +18,28 @@ class DataEntry:
         self.tempbmp = 0.
         self.pressure = 0.
 
+class WifiDataEntry:
+
+    def __init__(self):
+        self.rssiCnt = 0
+        self.ssids = []
+        self.rssis = []
+
+    def addData(self, ssid: str, rssi: int):
+        self.ssids += [ssid]
+        self.rssis += [rssi]
 
 class DataManager:
     def __init__(self, path):
         self._path = osp.join(osp.dirname(osp.realpath(__file__)), path)
+        with open(self._path, 'w') as f:
+                f.write('timestamp, accelx, accely, accelz, gyrox, gryoy, gyroz, magnx, magny, magnz, roll, pitch, yaw, tempbno, tempbmp, pressure\n')
 
     def __enter__(self):
         self.to_write = queue.Queue()
 
         def writer():
             with open(self._path, 'a') as f:
-                f.write('timestamp, accelx, accely, accelz, gyrox, gryoy, gyroz, magnx, magny, magnz, roll, pitch, yaw, tempbno, tempbmp, pressure\n')
                 for d in iter(self.to_write.get, None):
                     d: DataEntry
                     f.write(f'{d.ts}, ' + \
@@ -47,6 +58,30 @@ class DataManager:
 
     
     def write(self, d: DataEntry):
+        self.to_write.put(d)
+
+class WifiDataManager:
+    def __init__(self, path):
+        self._path = osp.join(osp.dirname(osp.realpath(__file__)), path)
+
+    def __enter__(self):
+        self.to_write = queue.Queue()
+
+        def writer():
+            with open(self._path, 'a') as f:
+                for d in iter(self.to_write.get, None):
+                    d: WifiDataEntry
+                    f.write(f'{d.rssiCnt},' + ''.join([f' {ssid}, {rssi},' for ssid, rssi in zip(d.ssids, d.rssis)]).rstrip(',') + '\n')
+                    
+        self.t = threading.Thread(target=writer)
+        self.t.start()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.to_write.put(None)
+
+    
+    def write(self, d: WifiDataEntry):
         self.to_write.put(d)
         
 

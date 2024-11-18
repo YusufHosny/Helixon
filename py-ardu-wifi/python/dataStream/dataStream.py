@@ -13,7 +13,7 @@ class DataStream:
         self._thread = None
         self._done = False
 
-    def start(self, type: str, callback = None) -> None:
+    def start(self, callback = None) -> None:
             self._thread = ts.Thread(target=self.streamThread, name='streamThread')
             self._callback = callback
             self._thread.start()
