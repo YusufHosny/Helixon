@@ -6,13 +6,12 @@ void startCommandCenter() {
   if (client) {                
     Serial.println("new client");
     digitalWrite(6, HIGH);    
-    delay(1);
-    while(client.connected()) {
 
-      // read client request
-      char request[4] = {};
+    char request[4] = {};
+    while(client.connected()) {
       while (client.available()) {
-        char c = client.read();           
+        // read next char
+        char c = client.read();
         Serial.write(c);
         
         // shift in new char
@@ -29,11 +28,22 @@ void startCommandCenter() {
 
           // send data
           client.write((byte *) &d, sizeof(d));
-          delay(4);
         }
         else if(strncmp(request, "wifi", 4) == 0) {
-          // 
+          // update rssi vals
+          readInterboardRssis();
 
+          RssiDataEntry wifid;
+          wifid.rssiCnt = rssiCnt;
+          for(int i = 0; i < 25; i++) {
+            for(int j = 0; j < 20; j++) {
+              wifid.SSIDs[i][j] = SSIDs[i][j];
+            }
+            wifid.RSSIs[i] = RSSIs[i];
+          }
+
+          client.write((byte *) &wifid, sizeof(wifid));
+          Serial.print("done");
         }
       }
     }

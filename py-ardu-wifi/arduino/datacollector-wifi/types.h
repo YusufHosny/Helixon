@@ -12,4 +12,10 @@ struct DataEntry { // size 128bytes
   double pressure; // 8 bytes
 };
 
+struct RssiDataEntry { // size 604 bytes
+  int8_t rssiCnt; // 1 byte + 3 padding?
+  char SSIDs[25][20]; // 25*20 = 500 bytes
+  int32_t RSSIs[25]; // 25*4 = 100 bytes
+};
+
 #endif

@@ -24,11 +24,12 @@ void setup() {
 }
 
 void loop() {
-  readInterboardRssis();
+  startCommandCenter();
 }
 
 #endif
 #ifdef SLAVE
+long unsigned int tprev;
 
 void setup() {
   delay(2000);
@@ -37,12 +38,20 @@ void setup() {
   enable_WiFi();
 
   setup_interboard();
+  
+  tprev = millis();
 }
 
-void loop() {   
-  // nothing
-  fillRssiData();
-  sendInterboardRssis();
+void loop() {
+  if(millis() - tprev > 3000) { // every 3 sec
+    fillRssiData();
+    tprev = millis();
+  }
+    
+  if(Serial1.available() && Serial1.read() == 'r')
+    sendInterboardRssis();
+    fillRssiData();
+    tprev = millis();
 }
 
 #endif
