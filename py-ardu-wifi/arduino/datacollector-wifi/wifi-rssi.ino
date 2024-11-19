@@ -15,16 +15,23 @@ void fillRssiData() {
   }
   for(int i = 0; i < 25 && i < rssiCnt; i++) {
     RSSIs[i] = WiFi.RSSI(i);
-    char ssidBuf[20] = {}; 
-    strncpy(ssidBuf, WiFi.SSID(i), sizeof(ssidBuf));
-    memcpy(SSIDs[i], ssidBuf, sizeof(SSIDs[i]));
+    byte *buf = WiFi.BSSID(i, BSSIDs[i]);
+    for(int j = 0; j < 6; j++) {
+      BSSIDs[i][j] = buf[j];
+    }
   }
+  printRssiData();
 }
 
 void printRssiData() {
   Serial.println(rssiCnt);
   for(int i = 0; i < (rssiCnt > 25 ? 25 : rssiCnt); i++) {
-    Serial.print("(Reciever)"); Serial.print("SSID ("); Serial.print(i); Serial.print("): "); Serial.print(SSIDs[i]);
+    Serial.print("(Reciever)"); Serial.print("SSID ("); Serial.print(i); Serial.print("): "); 
+    for(int j = 0; j < 5; j++) {
+      Serial.print(BSSIDs[i][j]); Serial.print(":");
+    }
+    Serial.print(BSSIDs[i][5]);
+    
     Serial.print("RSSI: "); Serial.print(RSSIs[i]);
     Serial.println("dB");
   }

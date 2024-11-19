@@ -64,7 +64,7 @@ def gtPoseIterator(dataset_name):
 
 # Creates an array of raw data with a direct 19-element structure per row
 def rawDataIterator(dataset_name):
-    path = rf"Measurements\{dataset_name}\rawdata.txt"
+    path = rf"Measurements\{dataset_name}\raw.csv"
     
     raw_data = []
 
@@ -78,7 +78,7 @@ def rawDataIterator(dataset_name):
             pass
         else:
             # If the first line is not a header, process it
-            row_data = list(map(float, header[:19]))
+            row_data = list(map(float, header[:16]))
             raw_data.append(row_data)
 
         # Process the rest of the lines
@@ -86,8 +86,8 @@ def rawDataIterator(dataset_name):
             # The elements in the .txt file are separated by commas
             elements = line.strip().split(',')
             
-            # Convert elements to float and create a row with exactly 19 elements
-            row_data = list(map(float, elements[:19]))
+            # Convert elements to float and create a row with exactly 16 elements
+            row_data = list(map(float, elements[:16]))
 
             # Append the row directly to raw_data
             raw_data.append(row_data)
@@ -99,7 +99,7 @@ def rawDataIterator(dataset_name):
 
 # Creates an array of wifi data from file
 def wifiDataIterator(dataset_name):
-    path = rf"Measurements\{dataset_name}\wifidata.txt"
+    path = rf"Measurements\{dataset_name}\wifi.csv"
     
     wifi_data = []
 
@@ -129,6 +129,8 @@ def labelAndStore(dataset_name):
     filtered_gt_data = gtPoseIterator(dataset_name)
     filtered_raw_data = rawDataIterator(dataset_name)
 
+    wifiData = wifiDataIterator(dataset_name)
+
     led_values = led_values[200:]
     filtered_gt_data = filtered_gt_data[200:]
 
@@ -151,7 +153,7 @@ def labelAndStore(dataset_name):
     raw_timestamps = filtered_raw_data[:, 0] # Assuming timestamp is the first column in filtered_raw_data
     filtered_gt_data[:, 0] = (filtered_gt_data[:, 0] * 1e6).astype(int)
 
-    storeAsHDF5(dataset_name, filtered_raw_data, filtered_gt_data)
+    storeAsHDF5(dataset_name, filtered_raw_data, filtered_gt_data, wifiData)
 
     
 

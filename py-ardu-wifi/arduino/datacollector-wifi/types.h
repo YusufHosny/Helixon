@@ -3,7 +3,6 @@
 
 struct DataEntry { // size 152 bytes
   unsigned long microsT; // 4 bytes + 4 padding
-  double accelx, accely, accelz; // 8 bytes * 3
   double linaccelx, linaccely, linaccelz; // 8 bytes * 3
   double gyrox, gyroy, gyroz; // 8 bytes * 3
   double magnx, magny, magnz; // 8 bytes * 3
@@ -13,9 +12,9 @@ struct DataEntry { // size 152 bytes
   double pressure; // 8 bytes
 };
 
-struct RssiDataEntry { // size 604 bytes
-  int8_t rssiCnt; // 1 byte + 3 padding?
-  char SSIDs[25][20]; // 25*20 = 500 bytes
+struct RssiDataEntry { // size 252 bytes 
+  int8_t rssiCnt; // 1 byte
+  byte BSSIDs[25][6]; // 25*6 = 150 bytes + 2 padding
   int32_t RSSIs[25]; // 25*4 = 100 bytes
 };
 

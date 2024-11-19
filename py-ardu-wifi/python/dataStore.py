@@ -10,7 +10,6 @@ class DataEntry:
 
     def __init__(self):
         self.ts = 0
-        self.accel = [0., 0., 0.]
         self.linaccel = [0., 0., 0.]
         self.gyro = [0., 0., 0.]
         self.magn = [0., 0., 0.]
@@ -35,7 +34,7 @@ class DataManager:
         self._path = osp.join(osp.dirname(osp.realpath(__file__)), path)
         with open(self._path, 'a') as f:
                 if f.tell() == 0:
-                    f.write('timestamp, accelx, accely, accelz, linaccelx, linaccely, linaccelz, gyrox, gryoy, gyroz, magnx, magny, magnz, roll, pitch, yaw, tempbno, tempbmp, pressure\n')
+                    f.write('timestamp, linaccelx, linaccely, linaccelz, gyrox, gryoy, gyroz, magnx, magny, magnz, roll, pitch, yaw, tempbno, tempbmp, pressure\n')
 
     def __enter__(self):
         self.to_write = queue.Queue()
@@ -45,7 +44,6 @@ class DataManager:
                 for d in iter(self.to_write.get, None):
                     d: DataEntry
                     f.write(f'{d.ts}, ' + \
-                        f'{d.accel[X]}, {d.accel[Y]}, {d.accel[Z]}, ' + \
                         f'{d.linaccel[X]}, {d.linaccel[Y]}, {d.linaccel[Z]}, ' + \
                         f'{d.magn[X]}, {d.magn[Y]}, {d.magn[Z]}, ' + \
                         f'{d.gyro[X]}, {d.gyro[Y]}, {d.gyro[Z]}, ' + \
@@ -74,7 +72,8 @@ class WifiDataManager:
             with open(self._path, 'a') as f:
                 for d in iter(self.to_write.get, None):
                     d: WifiDataEntry
-                    f.write(f'{d.rssiCnt},' + ''.join([f' {ssid.replace(',', '')}, {rssi},' for ssid, rssi in zip(d.ssids, d.rssis)]).rstrip(',') + '\n')
+                    f.write(f'{d.rssiCnt},' + ''.join([f' {''.join([hex(bssidbyte)[2:] + ':' for bssidbyte in bssid]).rstrip(':')}, {rssi},' \
+                                                       for bssid, rssi in zip(d.ssids, d.rssis)]).rstrip(',') + '\n')
                     
         self.t = threading.Thread(target=writer)
         self.t.start()

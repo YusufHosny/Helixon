@@ -36,8 +36,8 @@ void startCommandCenter() {
           RssiDataEntry wifid;
           wifid.rssiCnt = rssiCnt;
           for(int i = 0; i < 25; i++) {
-            for(int j = 0; j < 20; j++) {
-              wifid.SSIDs[i][j] = SSIDs[i][j];
+            for(int j = 0; j < 6; j++) {
+              wifid.BSSIDs[i][j] = BSSIDs[i][j];
             }
             wifid.RSSIs[i] = RSSIs[i];
           }
