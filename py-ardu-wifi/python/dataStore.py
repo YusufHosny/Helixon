@@ -74,7 +74,7 @@ class WifiDataManager:
             with open(self._path, 'a') as f:
                 for d in iter(self.to_write.get, None):
                     d: WifiDataEntry
-                    f.write(f'{d.rssiCnt},' + ''.join([f' {ssid}, {rssi},' for ssid, rssi in zip(d.ssids, d.rssis)]).rstrip(',') + '\n')
+                    f.write(f'{d.rssiCnt},' + ''.join([f' {ssid.replace(',', '')}, {rssi},' for ssid, rssi in zip(d.ssids, d.rssis)]).rstrip(',') + '\n')
                     
         self.t = threading.Thread(target=writer)
         self.t.start()

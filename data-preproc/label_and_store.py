@@ -97,6 +97,30 @@ def rawDataIterator(dataset_name):
 
     return raw_data
 
+# Creates an array of wifi data from file
+def wifiDataIterator(dataset_name):
+    path = rf"Measurements\{dataset_name}\wifidata.txt"
+    
+    wifi_data = []
+
+    with open(path, 'r') as file:
+        # Process the rest of the lines
+        for line in file:
+            # The elements in the .txt file are separated by commas
+            elements = line.strip().split(',')
+            
+            # Convert elements to float and create a row with exactly 19 elements
+            row_data = list(map(float, elements))
+
+            # Append the row directly to wifi_data
+            wifi_data.append(row_data)
+
+    # Convert wifi_data to a numpy array with a consistent dtype
+    wifi_data = np.array(wifi_data, dtype=np.float64)
+
+    return wifi_data
+
+
 
 def labelAndStore(dataset_name):
 
