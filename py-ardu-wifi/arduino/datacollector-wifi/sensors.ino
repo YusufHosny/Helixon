@@ -30,6 +30,10 @@ void fillData(DataEntry *data) {
   data->accelx = event.acceleration.x;
   data->accely = event.acceleration.y;
   data->accelz = event.acceleration.z;
+  bno.getEvent(&event, Adafruit_BNO055::VECTOR_LINEARACCEL);
+  data->linaccelx = event.acceleration.x;
+  data->linaccely = event.acceleration.y;
+  data->linaccelz = event.acceleration.z;
   bno.getEvent(&event, Adafruit_BNO055::VECTOR_GYROSCOPE);
   data->gyrox = event.gyro.x;
   data->gyroy = event.gyro.y;
