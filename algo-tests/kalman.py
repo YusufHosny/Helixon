@@ -5,6 +5,7 @@ from hlxon_hdf5io import *
 from scipy.spatial.transform import Rotation
 from typing import Callable, Self
 from metrics import *
+import time
 
 # get data from hdf5
 raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, gt_timestamp, gt_position, gt_orientation = readHDF5('spiral2')
@@ -91,6 +92,14 @@ class HelixonKalmanFilter:
             kf.predict(us[i], dt)
             kf.update(ys[i])
             pos[i] = kf.xhat[:3].reshape((3,))
+            print(pos[i])
+        return pos
+    
+    def run_step(self: Self, u: np.ndarray, y: np.ndarray, dt: float) -> np.ndarray:
+        self.predict(u, dt)
+        self.update(y)
+        pos = self.xhat[:3].flatten()
+        print(pos)
         return pos
 
 
@@ -146,14 +155,14 @@ ys = heights
 # all us (control inputs) for kalman filter
 us = np.concatenate((accel, gyro), axis=1).reshape((-1, 6, 1))
 
-pos = kf.run_offlne(us, ys)
-
-
 # PLOTTING
 # TARGET = 'height'
-TARGET = 'height'
+# TARGET = 'all'
+TARGET = 'real_time'
 
 if TARGET == 'height':
+
+    pos = kf.run_offlne(us, ys)
     # ATE and RTE for heights only
     ateKALMAN, rteKALMAN = compute_ate_rte(np.concatenate((np.array(ts).reshape((-1, 1)), pos*np.array([0, 0, 1])), axis=1), 
                                         np.concatenate((np.array(gt_timestamp).reshape((-1, 1)), gt_position*np.array([0, 0, 1])), axis=1))
@@ -172,6 +181,8 @@ if TARGET == 'height':
     plt.show()
 
 elif TARGET == 'all':
+
+    pos = kf.run_offlne(us, ys)
     ateKALMAN, rteKALMAN = compute_ate_rte(np.concatenate((np.array(ts).reshape((-1, 1)), pos), axis=1), 
                                         np.concatenate((np.array(gt_timestamp).reshape((-1, 1)), gt_position), axis=1))
     print(f'kalman filter ate: {ateKALMAN} rte: {rteKALMAN}')
@@ -182,3 +193,24 @@ elif TARGET == 'all':
     ax.plot3D(pos[:, 0], pos[:, 1], pos[:, 2], 'blue')
     ax.plot3D(gt_position[:, 0], gt_position[:, 1], gt_position[:, 2], 'gray')
     plt.show()
+
+elif TARGET == 'real_time':
+
+    tot_time = 0
+
+    for i in range(1, len(ts)):
+        dt = ts[i] - ts[i - 1]
+        u = us[i]
+        y = ys[i]
+        
+        t1 = time.perf_counter()
+        # position estimate
+        estimated_position = kf.run_step(u, y, dt)
+
+        t2 = time.perf_counter()
+
+        tot_time += t2-t1
+
+        #print(f"Time {ts[i]:.2f}s | Estimated Position: {estimated_position}")
+
+    print("Operating frequency: ", (len(ts)-1)/tot_time, " Hz")
