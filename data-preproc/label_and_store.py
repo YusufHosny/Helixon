@@ -62,7 +62,7 @@ def gtPoseIterator(dataset_name):
     return gt_data
 
 
-# Creates an array of raw data with a direct 16-element structure per row
+# Creates an array of raw data with a direct 19-element structure per row
 def rawDataIterator(dataset_name):
     path = rf"Measurements\{dataset_name}\rawdata.txt"
     
@@ -78,7 +78,7 @@ def rawDataIterator(dataset_name):
             pass
         else:
             # If the first line is not a header, process it
-            row_data = list(map(float, header[:16]))
+            row_data = list(map(float, header[:19]))
             raw_data.append(row_data)
 
         # Process the rest of the lines
@@ -86,8 +86,8 @@ def rawDataIterator(dataset_name):
             # The elements in the .txt file are separated by commas
             elements = line.strip().split(',')
             
-            # Convert elements to float and create a row with exactly 16 elements
-            row_data = list(map(float, elements[:16]))
+            # Convert elements to float and create a row with exactly 19 elements
+            row_data = list(map(float, elements[:19]))
 
             # Append the row directly to raw_data
             raw_data.append(row_data)

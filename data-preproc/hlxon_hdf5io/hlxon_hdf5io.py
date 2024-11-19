@@ -5,11 +5,11 @@ import os
 def storeAsHDF5(dataset_name, raw_data, gt_data):
     # Grouping raw data based on the specified structure
     timestamp_data = np.array([row[0] for row in raw_data], dtype=np.float64)
-    nine_dof_data = np.array([row[1:10] for row in raw_data], dtype=np.float64)
-    rpy_data = np.array([row[10:13] for row in raw_data], dtype=np.float64)
-    bno_data = np.array([row[13] for row in raw_data], dtype=np.int64)
-    bmp_data = np.array([row[14] for row in raw_data], dtype=np.float64)
-    pressure_data = np.array([row[15] for row in raw_data], dtype=np.float64)
+    nine_dof_data = np.array([row[1:13] for row in raw_data], dtype=np.float64)
+    rpy_data = np.array([row[13:16] for row in raw_data], dtype=np.float64)
+    bno_data = np.array([row[16] for row in raw_data], dtype=np.int64)
+    bmp_data = np.array([row[17] for row in raw_data], dtype=np.float64)
+    pressure_data = np.array([row[18] for row in raw_data], dtype=np.float64)
 
     # Ensure ground-truth data is organized correctly: timestamp, position (x, y, z), and orientation (qx, qy, qz, qw)
     gt_timestamp = np.array([row[0] for row in gt_data], dtype=np.float64)
