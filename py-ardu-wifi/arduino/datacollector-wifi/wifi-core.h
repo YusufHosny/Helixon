@@ -5,10 +5,10 @@
 
 // char ssid[] = "wifiFromNapoli";
 // char pass[] = "forzanapo";
-// char ssid[] = "wifiFromLibanon";
-// char pass[] = "libanonnumba1";
-char ssid[] = "AAAAAAARGHHHHHHHA";
-char pass[] = "wordpass12";
+char ssid[] = "wifiFromLibanon";
+char pass[] = "libanonnumba1";
+// char ssid[] = "AAAAAAARGHHHHHHHA";
+// char pass[] = "wordpass12";
 
 WiFiServer server(3435);
 WiFiClient client = server.available();

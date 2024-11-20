@@ -12,9 +12,10 @@ struct DataEntry { // size 152 bytes
   double pressure; // 8 bytes
 };
 
-struct RssiDataEntry { // size 252 bytes 
+struct RssiDataEntry { // size 256 bytes 
+  unsigned long microsT; // 4 bytes
   int8_t rssiCnt; // 1 byte
-  byte BSSIDs[25][6]; // 25*6 = 150 bytes + 2 padding
+  byte BSSIDs[25][6]; // 25*6 = 150 bytes + 1 padding
   int32_t RSSIs[25]; // 25*4 = 100 bytes
 };
 

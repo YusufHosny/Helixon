@@ -21,6 +21,7 @@ class DataEntry:
 class WifiDataEntry:
 
     def __init__(self):
+        self.ts = 0
         self.rssiCnt = 0
         self.ssids = []
         self.rssis = []

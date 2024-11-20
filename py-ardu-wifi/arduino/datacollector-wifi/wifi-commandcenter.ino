@@ -23,12 +23,13 @@ void startCommandCenter() {
         // check which request
         if(strncmp(request, "data", 4) == 0) {
           // get data from sensors
-          for(int i = 0; i < 50; i++) {
+          for(int i = 0; i < 10; i++) {
             DataEntry d = {};
             fillData(&d);
 
             // send data
             client.write((byte *) &d, sizeof(d));
+            delay(20);
           } 
         }
         else if(strncmp(request, "wifi", 4) == 0) {
@@ -36,6 +37,7 @@ void startCommandCenter() {
           readInterboardRssis();
 
           RssiDataEntry wifid;
+          wifid.microsT = micros();
           wifid.rssiCnt = rssiCnt;
           for(int i = 0; i < 25; i++) {
             for(int j = 0; j < 6; j++) {

@@ -12,7 +12,7 @@ ds = CollectionDataStream(os.getenv('ip'), int(os.getenv('port')))
 ds.start()
 
 
-time.sleep(5*60)
+time.sleep(11*60)
 
 ds.terminate()
 print("done.")  

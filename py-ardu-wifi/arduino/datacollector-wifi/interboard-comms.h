@@ -2,7 +2,7 @@
 #define INTERBOARDH
 
 #define MASTER
-//#define SLAVE
+// #define SLAVE
 
 void setup_interboard();
 
