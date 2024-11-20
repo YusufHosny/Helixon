@@ -23,11 +23,13 @@ void startCommandCenter() {
         // check which request
         if(strncmp(request, "data", 4) == 0) {
           // get data from sensors
-          DataEntry d = {};
-          fillData(&d);
+          for(int i = 0; i < 50; i++) {
+            DataEntry d = {};
+            fillData(&d);
 
-          // send data
-          client.write((byte *) &d, sizeof(d));
+            // send data
+            client.write((byte *) &d, sizeof(d));
+          } 
         }
         else if(strncmp(request, "wifi", 4) == 0) {
           // update rssi vals
