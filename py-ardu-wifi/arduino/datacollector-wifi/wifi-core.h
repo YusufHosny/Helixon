@@ -15,7 +15,7 @@ WiFiClient client = server.available();
 int status = WL_IDLE_STATUS; // wifi status
 
 int8_t rssiCnt;
-char SSIDs[25][20];
+byte BSSIDs[25][6];
 int32_t RSSIs[25];
 
 void enable_WiFi();
@@ -23,14 +23,15 @@ void connect_WiFi();
 void disconnect_WiFi();
 void startTCPServer();
 
-
 void scanRSSIs();
 void fillRssiData();
+
 
 void rttTest();
 
 void startCommandCenter();
 
+void printRssiData();
 void printWifiData();
 
 #endif

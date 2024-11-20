@@ -9,10 +9,10 @@ import time
 load_dotenv()
 
 ds = CollectionDataStream(os.getenv('ip'), int(os.getenv('port')))
-ds.start('data')
+ds.start()
 
 
-time.sleep(60*12)
+time.sleep(5*60)
 
 ds.terminate()
 print("done.")  

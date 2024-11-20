@@ -26,10 +26,10 @@ void setup_bmp() {
 void fillData(DataEntry *data) {
   sensors_event_t event;
   data->microsT = micros();
-  bno.getEvent(&event, Adafruit_BNO055::VECTOR_ACCELEROMETER);
-  data->accelx = event.acceleration.x;
-  data->accely = event.acceleration.y;
-  data->accelz = event.acceleration.z;
+  bno.getEvent(&event, Adafruit_BNO055::VECTOR_LINEARACCEL);
+  data->linaccelx = event.acceleration.x;
+  data->linaccely = event.acceleration.y;
+  data->linaccelz = event.acceleration.z;
   bno.getEvent(&event, Adafruit_BNO055::VECTOR_GYROSCOPE);
   data->gyrox = event.gyro.x;
   data->gyroy = event.gyro.y;

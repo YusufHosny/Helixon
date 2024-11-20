@@ -1,11 +1,10 @@
 #include <Wire.h>
-
+#include "interboard-comms.h"
 #include "wifi-core.h"
 #include "sensors.h"
 #include "types.h"
-#include "spi-comms.h"
 
-#ifdef RECEIVERSPI
+#ifdef MASTER
 
 void setup() {
   delay(2000);
@@ -18,6 +17,8 @@ void setup() {
   startTCPServer();
   printWifiData();
 
+  setup_interboard();
+
   setup_bno();
   setup_bmp();
 }
@@ -27,7 +28,8 @@ void loop() {
 }
 
 #endif
-#ifdef SENDERSPI
+#ifdef SLAVE
+long unsigned int tprev;
 
 void setup() {
   delay(2000);
@@ -35,11 +37,21 @@ void setup() {
 
   enable_WiFi();
 
-  setup_spi();
+  setup_interboard();
+  
+  tprev = millis();
 }
 
-void loop() {   
-  sendSpiRssis();
+void loop() {
+  if(millis() - tprev > 3000) { // every 3 sec
+    fillRssiData();
+    tprev = millis();
+  }
+    
+  if(Serial1.available() && Serial1.read() == 'r')
+    sendInterboardRssis();
+    fillRssiData();
+    tprev = millis();
 }
 
 #endif

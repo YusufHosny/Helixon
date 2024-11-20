@@ -1,60 +1,63 @@
 import socket as sock
 import time
 import struct
-from dataStore import DataEntry, DataManager
+from dataStore import WifiDataEntry, WifiDataManager, DataEntry, DataManager
 from dataStream.dataStream import DataStream
 
 class CollectionDataStream(DataStream):
 
     def streamThread(self,):
-        # data format
-        # struct DataEntry { // size 128bytes: 117 + 11 alignment padding
-        #     unsigned long microsT; // 4 bytes + 4 padding
-        #     double accelx, accely, accelz; // 8 bytes * 3
-        #     double gyrox, gyroy, gyroz; // 8 bytes * 3
-        #     double magnx, magny, magnz; // 8 bytes * 3
-        #     double roll, pitch, yaw; // 8 bytes * 3
-        #     int8_t tempbno;  // 1 byte + 7 padding
-        #     double tempbmp; // 8 bytes
-        #     double pressure; // 8 bytes 
-        # };
 
         X = 0
         Y = 1
         Z = 2    
-        with DataManager('test.csv') as dm:
-            with sock.socket(sock.AF_INET, sock.SOCK_STREAM) as s:
-                s.settimeout(11)
-                s.connect((self.host, self.port))
-                s.sendall(b'RDY\n')
-                print("connected")
-                d = DataEntry()
-                while not self._done:
-                    tprev = None
-                    try:
-                        raw_data = s.recv(128)
-                        data_entry_struct = struct.unpack('<LLddddddddddddBBBBLdd', raw_data) # manually padding
-                        d.ts = data_entry_struct[0]
-                        d.accel[X] = data_entry_struct[2] # skip bc of padding see struct definition
-                        d.accel[Y] = data_entry_struct[3]
-                        d.accel[Z] = data_entry_struct[4]
-                        d.gyro[X] = data_entry_struct[5]
-                        d.gyro[Y] = data_entry_struct[6]
-                        d.gyro[Z] = data_entry_struct[7]
-                        d.magn[X] = data_entry_struct[8]
-                        d.magn[Y] = data_entry_struct[9]
-                        d.magn[Z] = data_entry_struct[10]
-                        d.rpy[X] = data_entry_struct[11]
-                        d.rpy[Y] = data_entry_struct[12]
-                        d.rpy[Z] = data_entry_struct[13]
-                        d.tempbno = data_entry_struct[14]
-                        d.tempbmp = data_entry_struct[19] # padding skip
-                        d.pressure = data_entry_struct[20]              
+        with sock.socket(sock.AF_INET, sock.SOCK_STREAM) as s:
+            s.settimeout(5)
+            s.connect((self.host, self.port))
+            print("connected")
+            d = DataEntry()
+            with WifiDataManager('wifi.csv') as wdm:
+                with DataManager('raw.csv') as dm:
+                    while not self._done:
+                        try:
+                            wifid = WifiDataEntry()
+                            s.sendall(b'wifi\n')
+                            raw_wifi_data = s.recv(252)
+                            
+                            data_entry_struct = struct.unpack('<b'+'6B'*25+'x'+'i'*25, raw_wifi_data) # manually padding
+                            wifid.rssiCnt = data_entry_struct[0]
+                            for i in range(wifid.rssiCnt):
+                                bssid_offset = 1
+                                rssi_offset = bssid_offset+6*25
+                                bssid = data_entry_struct[bssid_offset+6*i:bssid_offset+6*(i+1)]
+                                rssi = data_entry_struct[rssi_offset+i]
+                                wifid.addData(bssid, rssi)
+                            
+                            wdm.write(wifid)
+                            time.sleep(.01)
                         
-                        dm.write(d)
-                        # if tprev is not None:
-                        #     time.sleep((d.ts - tprev)*1e-6 + 10e-3)
-                        # tprev = d.ts
-                        time.sleep(1./50.)
-                    except:
-                        pass
+                            for _ in range(50):
+                                s.sendall(b'data\n')
+                                raw_data = s.recv(128)
+                                data_entry_struct = struct.unpack('<L4x3d3d3d3dB7xdd', raw_data) # manually padding
+                                d.ts            = data_entry_struct[0]
+                                d.linaccel[X]   = data_entry_struct[1]
+                                d.linaccel[Y]   = data_entry_struct[2]
+                                d.linaccel[Z]   = data_entry_struct[3]
+                                d.gyro[X]       = data_entry_struct[4]
+                                d.gyro[Y]       = data_entry_struct[5]
+                                d.gyro[Z]       = data_entry_struct[6]
+                                d.magn[X]       = data_entry_struct[7]
+                                d.magn[Y]       = data_entry_struct[8]
+                                d.magn[Z]       = data_entry_struct[9]
+                                d.rpy[X]        = data_entry_struct[10]
+                                d.rpy[Y]        = data_entry_struct[11]
+                                d.rpy[Z]        = data_entry_struct[12]
+                                d.tempbno       = data_entry_struct[13]
+                                d.tempbmp       = data_entry_struct[14]
+                                d.pressure      = data_entry_struct[15]    
+
+                                dm.write(d)
+                                time.sleep(.01)
+                        except:
+                            pass
