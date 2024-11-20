@@ -35,9 +35,8 @@ class CollectionDataStream(DataStream):
                             
                             wdm.write(wifid)
                             time.sleep(.01)
-                        
+                            s.sendall(b'data\n')
                             for _ in range(50):
-                                s.sendall(b'data\n')
                                 raw_data = s.recv(128)
                                 data_entry_struct = struct.unpack('<L4x3d3d3d3dB7xdd', raw_data) # manually padding
                                 d.ts            = data_entry_struct[0]
