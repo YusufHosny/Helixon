@@ -39,7 +39,7 @@ class CollectionDataStream(DataStream):
                                 time.sleep(.01)
                                 for _ in range(10):
                                     s.sendall(b'data\n')
-                                    for _ in range(5):
+                                    for _ in range(10):
                                         raw_data = s.recv(128)
                                         data_entry_struct = struct.unpack('<L4x3d3d3d3dB7xdd', raw_data) # manually padding
                                         d.ts            = data_entry_struct[0]
