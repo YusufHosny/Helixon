@@ -110,13 +110,10 @@ def wifiDataIterator(dataset_name):
             elements = line.strip().split(',')
             
             # create a row
-            row_data = elements
+            row_data = [int(e) if e.isnumeric() else e for e in elements]
 
             # Append the row directly to wifi_data
             wifi_data.append(row_data)
-
-    # Convert wifi_data to a numpy array with a consistent dtype
-    wifi_data = np.array(wifi_data, dtype=np.float64)
 
     return wifi_data
 
@@ -148,12 +145,17 @@ def labelAndStore(dataset_name):
     raw_initial_timestamp = filtered_raw_data[0, 0]
     filtered_raw_data[:, 0] -= raw_initial_timestamp
 
+    # normalize ts in wifi data
+    filtered_wifi_data = wifiData[:]
+    for i in range(filtered_wifi_data):
+        filtered_wifi_data[i][0] -= raw_initial_timestamp
+
     # Extract timestamps
     gt_timestamps = filtered_gt_data[:, 0]  # Assuming timestamp is the first column in filtered_gt_data
     raw_timestamps = filtered_raw_data[:, 0] # Assuming timestamp is the first column in filtered_raw_data
     filtered_gt_data[:, 0] = (filtered_gt_data[:, 0] * 1e6).astype(int)
 
-    storeAsHDF5(dataset_name, filtered_raw_data, filtered_gt_data, wifiData)
+    storeAsHDF5(dataset_name, filtered_raw_data, filtered_gt_data, filtered_wifi_data)
 
     
 
@@ -162,7 +164,7 @@ if __name__ == "__main__":
 
     # We first check if an argument is passed
     if len(sys.argv) != 2:
-        print("Usage: python dataLabeller.py <database_name>")
+        print("Usage: python label_and_store.py <database_name>")
 
     # If an argument is passed we call labelAndStore()
     else:
