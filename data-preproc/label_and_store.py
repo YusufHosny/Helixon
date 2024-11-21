@@ -147,7 +147,7 @@ def labelAndStore(dataset_name):
 
     # normalize ts in wifi data
     filtered_wifi_data = wifiData[:]
-    for i in range(filtered_wifi_data):
+    for i in range(len(filtered_wifi_data)):
         filtered_wifi_data[i][0] -= raw_initial_timestamp
 
     # Extract timestamps
