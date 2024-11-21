@@ -12,9 +12,10 @@ def storeAsHDF5(dataset_name, raw_data, gt_data, wifidata):
     pressure_data = np.array([row[15] for row in raw_data], dtype=np.float64)
 
     # group wifi data
-    count_data = np.array([row[0] for row in wifidata])
-    rssi_data = np.array([row[i] for row in wifidata for i in range(1, row, 2)])
-    ssid_data = np.array([row[i] for row in wifidata for i in range(2, row, 2)])
+    wifi_ts_data = np.array([row[0] for row in wifidata])
+    count_data = np.array([row[1] for row in wifidata])
+    rssi_data = np.array([row[i] for row in wifidata for i in range(2, len(row), 2)])
+    bssid_data = np.array([row[i] for row in wifidata for i in range(3, len(row), 2)])
 
     # Ensure ground-truth data is organized correctly: timestamp, position (x, y, z), and orientation (qx, qy, qz, qw)
     gt_timestamp = np.array([row[0] for row in gt_data], dtype=np.float64)
@@ -37,8 +38,9 @@ def storeAsHDF5(dataset_name, raw_data, gt_data, wifidata):
 
         # create WIFIDATA group
         wifidata_group = f.create_group('WIFIDATA')
+        wifidata_group.create_dataset('TIMESTAMP', data=wifi_ts_data)
         wifidata_group.create_dataset('COUNTS', data=count_data)
-        wifidata_group.create_dataset('SSIDS', data=ssid_data)
+        wifidata_group.create_dataset('BSSIDS', data=bssid_data)
         wifidata_group.create_dataset('RSSIS', data=rssi_data)
 
 
