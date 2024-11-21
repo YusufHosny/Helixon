@@ -1,4 +1,3 @@
-from os import path as osp
 import numpy as np
 import matplotlib.pyplot as plt
 from hlxon_hdf5io import *

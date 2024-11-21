@@ -40,6 +40,5 @@ class HelixonKalmanFilter:
     def run_step(self: Self, u: np.ndarray, y: np.ndarray, dt: float) -> np.ndarray:
         self.predict(u, dt)
         self.update(y)
-        pos = self.xhat[:3].flatten()
-        print(pos)
-        return pos
+        state = self.xhat.flatten()
+        return state

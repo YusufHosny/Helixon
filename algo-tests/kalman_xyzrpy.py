@@ -1,10 +1,8 @@
-from os import path as osp
 import numpy as np
 import matplotlib.pyplot as plt
 from hlxon_hdf5io import *
 from scipy.spatial.transform import Rotation
 from filters.HelixonKalmanFilter import *
-
 from metrics import *
 import time
 
