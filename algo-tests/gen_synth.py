@@ -1,6 +1,8 @@
 import numpy as np
 from scipy.spatial.transform import Rotation
 from hlxon_hdf5io import *
+import synth_router 
+
 
 """
 Spiral Synthetic Sensor Data Generator
@@ -156,6 +158,7 @@ for i in range(N):
     magn[i, Y] += np.random.normal(mean_magnet, std_magnet)
     magn[i, Z] += np.random.normal(mean_magnet, std_magnet)
 
+
 data = np.concatenate( ((ts*1e6).astype(np.int64),
                 accel[:, X].reshape(-1, 1),
                 accel[:, Y].reshape(-1, 1),
@@ -168,6 +171,7 @@ data = np.concatenate( ((ts*1e6).astype(np.int64),
                 magn[:, Z].reshape(-1, 1),
                 roll, pitch, yaw, tbno, tbmp, ps.reshape(-1, 1)),
                     axis=1)
+
 gtdata = np.concatenate( ((ts*1e6).astype(np.int64), \
                 gt_pos[:, 0].reshape(-1, 1), 
                 gt_pos[:, 1].reshape(-1, 1), 
@@ -175,4 +179,17 @@ gtdata = np.concatenate( ((ts*1e6).astype(np.int64), \
                 roll, pitch, yaw), 
                 axis = 1)
 
-storeAsHDF5('synthetic', data, gtdata)
+wifi = []
+
+# wifi data
+for i in range(N):
+    
+    if (i % 10 == 0): # Every 10 measurements
+
+        wifi_row = synth_router.get_RSSI_MAC(gt_pos[i])
+        wifi.append(wifi_row)
+
+wifidata = np.array(wifi)
+
+print(wifidata)
+#storeAsHDF5('synthetic', data, gtdata, wifidata)
