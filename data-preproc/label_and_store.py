@@ -109,8 +109,8 @@ def wifiDataIterator(dataset_name):
             # The elements in the .txt file are separated by commas
             elements = line.strip().split(',')
             
-            # Convert elements to float and create a row with exactly 19 elements
-            row_data = list(map(float, elements))
+            # create a row
+            row_data = elements
 
             # Append the row directly to wifi_data
             wifi_data.append(row_data)
