@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from hlxon_hdf5io import *
 from scipy.spatial.transform import Rotation
-from typing import Callable, Self
+from filters.HelixonKalmanFilter import *
 from metrics import *
 import time
 
@@ -45,7 +45,7 @@ global_accel_z = accel[:,Z]
 
 # remove gravity vector
 # minus since z axis is flipped
-global_accel_z -= 9.81
+# global_accel_z -= 9.81
 
 # --------------------------------
 # kalman filter
@@ -54,53 +54,9 @@ global_accel_z -= 9.81
 State Vector
 
 format:
-    - [0:3] positions x y z (meters global coords)
-    - [3:6] orientations roll pitch yaw (degrees)
-    - [6:9] velocities x y z (m/s global coords)
+    - [0:3] position z (meters global coords)
+    - [6:9] velocity z (m/s global coords)
 """
-class HelixonKalmanFilter:
-
-    def __init__(self: Self, getA: Callable[[float], np.ndarray], getB: Callable[[float], np.ndarray], P: np.ndarray, Q: np.ndarray, R: np.ndarray, H: np.ndarray):
-        self.getA = getA
-        self.getB = getB
-        self.P = P
-        self.Q = Q
-        self.R = R
-        self.H = H
-        self.xhat = np.zeros((2, 1))
-
-    def predict(self: Self, input: float, dt: float):
-        self.A = self.getA(dt)
-        self.B = self.getB(dt)
-
-        input = np.array([[input]])  # Convert scalar to 2D array
-
-        
-        self.xhat = self.A @ self.xhat + self.B @ input
-        self.P = self.A @ self.P @ self.A.T + self.Q
-
-    def update(self: Self, y: np.ndarray):
-        self.K = self.P @ self.H.T @ np.linalg.inv((self.H @ self.P @ self.H.T) + self.R)
-        
-        self.xhat += self.K @ (y - (self.H @ self.xhat))
-        self.P = (np.identity(2) - (self.K @ self.H)) @ self.P
-
-    def run_offlne(self: Self, us: np.ndarray, ys: np.ndarray) -> np.ndarray:
-        pos = np.zeros((N, 2))
-        for i in range(1, N):
-            dt = (ts[i]-ts[i-1])
-            kf.predict(us[i], dt)
-            kf.update(ys[i])
-            pos[i] = kf.xhat[:2].reshape((2,))
-
-        return pos[:,0] # Only interested in height, not velocity
-    
-    def run_step(self: Self, u: np.ndarray, y: np.ndarray, dt: float) -> np.ndarray:
-        self.predict(u, dt)
-        self.update(y)
-        pos = self.xhat[:2].flatten()
-        return pos[0] # Only interested in height, not velocity
-
 
 
 # P (measurement cov mat)
@@ -143,7 +99,7 @@ TARGET = 'offline'
 if TARGET == 'offline':
 
     # Run Kalman Filter offline
-    predicted_heights = kf.run_offlne(us, ys)
+    predicted_heights = kf.run_offlne(us, ys, ts)[:, 0]
 
     print(predicted_heights)
 

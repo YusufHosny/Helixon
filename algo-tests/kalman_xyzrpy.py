@@ -3,15 +3,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 from hlxon_hdf5io import *
 from scipy.spatial.transform import Rotation
-from typing import Callable, Self
+from filters.HelixonKalmanFilter import *
+
 from metrics import *
 import time
 
 # get data from hdf5
 raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, gt_timestamp, gt_position, gt_orientation = readHDF5('spiral2')
 
+# p0 is first real pressure measurement
 p0 = raw_pressure[np.argmax(np.array(raw_pressure) > 1e5)]
-raw_pressure = [p if p > 1e5 else p0 for p in raw_pressure]
 
 # convenience
 X, Y, Z = 0, 1, 2
@@ -45,10 +46,8 @@ for i, orientation in enumerate(raw_rpy):
 
 # remove gravity vector
 # minus since z axis is flipped
-accel[:, Z] -= 9.81
+# accel[:, Z] -= 9.81
 
-# remove offset from accelerations
-#accel -= accel.mean(axis=0, dtype=np.float64)
 
 # --------------------------------
 # kalman filter
@@ -61,47 +60,6 @@ format:
     - [3:6] orientations roll pitch yaw (degrees)
     - [6:9] velocities x y z (m/s global coords)
 """
-class HelixonKalmanFilter:
-
-    def __init__(self: Self, getA: Callable[[float], np.ndarray], getB: Callable[[float], np.ndarray], P: np.ndarray, Q: np.ndarray, R: np.ndarray, H: np.ndarray):
-        self.getA = getA
-        self.getB = getB
-        self.P = P
-        self.Q = Q
-        self.R = R
-        self.H = H
-        self.xhat = np.zeros((9, 1))
-
-    def predict(self: Self, input: np.ndarray, dt: float):
-        self.A = self.getA(dt)
-        self.B = self.getB(dt)
-        
-        self.xhat = self.A @ self.xhat + self.B @ input
-        self.P = self.A @ self.P @ self.A.T + self.Q
-
-    def update(self: Self, y: np.ndarray):
-        self.K = self.P @ self.H.T @ np.linalg.inv((self.H @ self.P @ self.H.T) + self.R)
-        
-        self.xhat += self.K @ (y - (self.H @ self.xhat))
-        self.P = (np.identity(9) - (self.K @ self.H)) @ self.P
-
-    def run_offlne(self: Self, us: np.ndarray, ys: np.ndarray) -> np.ndarray:
-        pos = np.zeros((N, 3))
-        for i in range(1, N):
-            dt = (ts[i]-ts[i-1])
-            kf.predict(us[i], dt)
-            kf.update(ys[i])
-            pos[i] = kf.xhat[:3].reshape((3,))
-            print(pos[i])
-        return pos
-    
-    def run_step(self: Self, u: np.ndarray, y: np.ndarray, dt: float) -> np.ndarray:
-        self.predict(u, dt)
-        self.update(y)
-        pos = self.xhat[:3].flatten()
-        print(pos)
-        return pos
-
 
 
 # P (measurement cov mat)
@@ -162,7 +120,7 @@ TARGET = 'real_time'
 
 if TARGET == 'height':
 
-    pos = kf.run_offlne(us, ys)
+    pos = kf.run_offlne(us, ys, ts)[:, :3]
     # ATE and RTE for heights only
     ateKALMAN, rteKALMAN = compute_ate_rte(np.concatenate((np.array(ts).reshape((-1, 1)), pos*np.array([0, 0, 1])), axis=1), 
                                         np.concatenate((np.array(gt_timestamp).reshape((-1, 1)), gt_position*np.array([0, 0, 1])), axis=1))
@@ -182,7 +140,7 @@ if TARGET == 'height':
 
 elif TARGET == 'all':
 
-    pos = kf.run_offlne(us, ys)
+    pos = kf.run_offlne(us, ys, ts)[:, :3]
     ateKALMAN, rteKALMAN = compute_ate_rte(np.concatenate((np.array(ts).reshape((-1, 1)), pos), axis=1), 
                                         np.concatenate((np.array(gt_timestamp).reshape((-1, 1)), gt_position), axis=1))
     print(f'kalman filter ate: {ateKALMAN} rte: {rteKALMAN}')
@@ -198,14 +156,14 @@ elif TARGET == 'real_time':
 
     tot_time = 0
 
-    for i in range(1, len(ts)):
+    for i in range(1, N):
         dt = ts[i] - ts[i - 1]
         u = us[i]
         y = ys[i]
         
         t1 = time.perf_counter()
         # position estimate
-        estimated_position = kf.run_step(u, y, dt)
+        estimated_position = kf.run_step(u, y, dt)[:3]
 
         t2 = time.perf_counter()
 
@@ -213,4 +171,4 @@ elif TARGET == 'real_time':
 
         #print(f"Time {ts[i]:.2f}s | Estimated Position: {estimated_position}")
 
-    print("Operating frequency: ", (len(ts)-1)/tot_time, " Hz")
+    print("Operating frequency: ", (N-1)/tot_time, " Hz")
