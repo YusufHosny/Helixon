@@ -110,7 +110,7 @@ def wifiDataIterator(dataset_name):
             elements = line.strip().split(',')
             
             # create a row
-            row_data = [int(e) if e.isnumeric() else e for e in elements]
+            row_data = [int(e) if e.strip().isnumeric() else e.strip() for e in elements]
 
             # Append the row directly to wifi_data
             wifi_data.append(row_data)
@@ -150,9 +150,6 @@ def labelAndStore(dataset_name):
     for i in range(len(filtered_wifi_data)):
         filtered_wifi_data[i][0] -= raw_initial_timestamp
 
-    # Extract timestamps
-    gt_timestamps = filtered_gt_data[:, 0]  # Assuming timestamp is the first column in filtered_gt_data
-    raw_timestamps = filtered_raw_data[:, 0] # Assuming timestamp is the first column in filtered_raw_data
     filtered_gt_data[:, 0] = (filtered_gt_data[:, 0] * 1e6).astype(int)
 
     storeAsHDF5(dataset_name, filtered_raw_data, filtered_gt_data, filtered_wifi_data)
