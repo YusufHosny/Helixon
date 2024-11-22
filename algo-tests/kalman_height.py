@@ -7,10 +7,9 @@ from metrics import *
 import time
 
 # get data from hdf5
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('spiral2')
+raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('dwifi')
 
-p0 = raw_pressure[np.argmax(np.array(raw_pressure) > 1e5)]
-raw_pressure = [p if p > 1e5 else p0 for p in raw_pressure]
+p0 = max(raw_pressure)
 
 # convenience
 Z = 2
@@ -40,7 +39,7 @@ for i, orientation in enumerate(raw_rpy):
         rot = Rotation.from_euler('xyz', orientation, degrees=True).inv()
     accel[i] = rot.apply(araw[i])
 
-global_accel_z = accel[:,Z]
+global_accel_z = accel[:,Z].reshape(N, 1, 1)
 
 # remove gravity vector
 # minus since z axis is flipped
@@ -59,11 +58,11 @@ format:
 
 
 # P (measurement cov mat)
-P = np.identity(2) * 0.5
+P = np.identity(2) * .01
 # Q (process noise)
-Q = np.identity(2) * 0.5
+Q = np.identity(2) * .1
 # R (measurement noise)
-R = np.identity(1) * .01
+R = np.identity(1) * 2.
 # H (measurement matrix)
 H = np.array([
     [ 1., 0. ], 
@@ -98,9 +97,24 @@ TARGET = 'offline'
 if TARGET == 'offline':
 
     # Run Kalman Filter offline
-    predicted_heights = kf.run_offlne(us, ys, ts)[:, 0]
+    predicted_heights = kf.run_offline(us, ys, ts)[:, 0].reshape(-1, 1)
 
-    print(predicted_heights)
+    # ATE and RTE for heights only
+    ateKALMAN, rteKALMAN = compute_ate_rte(np.concatenate((np.array(ts).reshape((-1, 1)), predicted_heights*np.array([0, 0, 1])), axis=1), 
+                                        np.concatenate((np.array(gt_timestamp).reshape((-1, 1)), gt_position*np.array([0, 0, 1])), axis=1))
+
+    ateH, rteH = compute_ate_rte(np.concatenate((np.array(ts).reshape((-1, 1)), heights*np.array([0, 0, 1])), axis=1), 
+                            np.concatenate((np.array(gt_timestamp).reshape((-1, 1)), gt_position*np.array([0, 0, 1])), axis=1))
+
+    print(f'kalman filter ate: {ateKALMAN} rte: {rteKALMAN}\nheights ate: {ateH} rte: {rteH}')
+
+    # plot heights as functions of time
+    fig = plt.figure()
+    ax = plt.axes(projection='3d')
+    ax.plot3D(np.zeros_like(predicted_heights[:, 0]) + 1, ts, predicted_heights[:, 0], 'blue')
+    ax.plot3D(np.zeros_like(heights.flatten()) + 2, ts, heights.flatten(), 'red')
+    ax.plot3D(np.zeros_like(gt_position[:, 0]), gt_timestamp, gt_position[:, 2], 'gray')
+    plt.show()
 
 
 elif TARGET == 'online':
