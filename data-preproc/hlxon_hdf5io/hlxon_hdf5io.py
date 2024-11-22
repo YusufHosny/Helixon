@@ -67,7 +67,7 @@ def readHDF5(dataset_name):
         # add wifi data
         wifi_timestamp_data =  f['WIFIDATA/TIMESTAMP']
         count_data = f['WIFIDATA/COUNTS']
-        ssid_data = f['WIFIDATA/SSIDS']
+        ssid_data = f['WIFIDATA/BSSIDS']
         rssi_data = f['WIFIDATA/RSSIS']
 
         # format wifi data
@@ -86,5 +86,5 @@ def readHDF5(dataset_name):
         gt_orientation = f['GT_DATA/ORIENTATION'][:]
 
     return raw_timestamp, raw_nine_dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, \
-        wifidata + \
+        wifidata,  \
         gt_timestamp, gt_position, gt_orientation
