@@ -5,6 +5,7 @@ from scipy.spatial.transform import Rotation
 from filters.HelixonKalmanFilter import *
 from metrics import *
 import time
+from model.spiral_model import *
 
 # get data from hdf5
 raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('dwifi')
@@ -82,6 +83,38 @@ def getB(dt: float):
         [dt]            # Velocity
     ])
 
+def align_spirals(predicted_positions, gt_positions):
+
+    predicted_positions = np.array(predicted_positions)
+    gt_positions = np.array(gt_positions)
+
+    # Find x, y bounds for predicted positions
+    x_max_pred = np.max(predicted_positions[:, 0])
+    x_min_pred = np.min(predicted_positions[:, 0])
+    y_max_pred = np.max(predicted_positions[:, 1])
+    y_min_pred = np.min(predicted_positions[:, 1])
+
+    # Find x, y bounds for ground truth positions
+    x_max_gt = np.max(gt_positions[:, 0])
+    x_min_gt = np.min(gt_positions[:, 0])
+
+    y_max_gt = np.max(gt_positions[:, 1])
+    y_min_gt = np.min(gt_positions[:, 1])
+
+    # Compute centroids
+    center_xy_pred = [(x_max_pred + x_min_pred) / 2, (y_max_pred + y_min_pred) / 2]
+    center_xy_gt = [(x_max_gt + x_min_gt) / 2, (y_max_gt + y_min_gt) / 2]
+
+    print(center_xy_pred, center_xy_gt)
+
+    predicted_positions[:,0] += (center_xy_gt[0] - center_xy_pred[0])
+
+    predicted_positions[:,1] += (center_xy_gt[1] - center_xy_pred[1])
+
+    return predicted_positions
+
+
+
 
 kf = HelixonKalmanFilter(getA, getB, P, Q, R, H)
 
@@ -92,12 +125,22 @@ ys = heights
 # all us (control inputs) for kalman filter
 us = global_accel_z
 
-TARGET = 'offline'
+# creating spiral model
+spiral_pitch = 5 #m
+spiral_radius = 8 #m
+path_width = 2.4 #m
+Spiral = Spiral(spiral_pitch, spiral_radius, path_width)
+
+
+TARGET = 'offline_spiral'
 # PLOTTING
 if TARGET == 'offline':
 
     # Run Kalman Filter offline
     predicted_heights = kf.run_offline(us, ys, ts)[:, 0].reshape(-1, 1)
+    predicted_positions = []
+    for height in predicted_heights:
+        predicted_positions.append(Spiral.point_at_z(height))
 
     # ATE and RTE for heights only
     ateKALMAN, rteKALMAN = compute_ate_rte(np.concatenate((np.array(ts).reshape((-1, 1)), predicted_heights*np.array([0, 0, 1])), axis=1), 
@@ -114,6 +157,7 @@ if TARGET == 'offline':
     ax.plot3D(np.zeros_like(predicted_heights[:, 0]) + 1, ts, predicted_heights[:, 0], 'blue')
     ax.plot3D(np.zeros_like(heights.flatten()) + 2, ts, heights.flatten(), 'red')
     ax.plot3D(np.zeros_like(gt_position[:, 0]), gt_timestamp, gt_position[:, 2], 'gray')
+    ax.plot3D(np.zeros_like(predicted_positions[:,0]), gt_timestamp, gt_position[:, 2], 'green')
     plt.show()
 
 
@@ -137,3 +181,27 @@ elif TARGET == 'online':
         print(f"Time {ts[i]:.2f}s | Estimated Height: {estimated_position}")
 
     print("Operating frequency: ", (len(ts)-1)/tot_time, " Hz")
+
+elif TARGET == 'offline_spiral':
+
+    # Run Kalman Filter offline
+    predicted_heights = kf.run_offline(us, ys, ts)[:, 0].reshape(-1, 1)
+    predicted_positions = []
+    for height in predicted_heights:
+        predicted_positions.append(Spiral.point_at_z(height))
+
+    predicted_positions = align_spirals(predicted_positions, gt_position)
+
+    # Predicted positions (Spiral model)
+    fig = plt.figure()
+    ax = plt.axes(projection='3d')
+    predicted_positions = np.array(predicted_positions)  # Convert list to NumPy array
+    ax.plot3D(predicted_positions[:, 0], predicted_positions[:, 1], predicted_positions[:, 2], 'red', label='Predicted Positions (Kalman)')
+    ax.plot3D(gt_position[:, 0], gt_position[:, 1], gt_position[:, 2], 'blue', label='Groundtruth Position')
+
+    
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    ax.legend()
+    plt.show()
