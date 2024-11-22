@@ -14,7 +14,10 @@ void setup() {
 
   enable_WiFi();
   connect_WiFi();
+
   startTCPServer();
+  // startUDPServer();
+
   printWifiData();
 
   setup_interboard();
@@ -24,7 +27,8 @@ void setup() {
 }
 
 void loop() {
-  startCommandCenter();
+  // startUDPCommandCenter();
+  startTCPCommandCenter();
 }
 
 #endif

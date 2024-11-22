@@ -1,7 +1,7 @@
 #include "wifi-core.h"
 #include "types.h"
 
-void startCommandCenter() {
+void startTCPCommandCenter() {
   client = server.available();
   if (client) {                
     Serial.println("new client");
@@ -57,7 +57,3 @@ void startCommandCenter() {
     digitalWrite(6, LOW);    
   }
 }
-
-
-
-
