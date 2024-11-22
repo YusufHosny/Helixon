@@ -7,7 +7,7 @@ from metrics import *
 import time
 
 # get data from hdf5
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, gt_timestamp, gt_position, gt_orientation = readHDF5('spiral2')
+raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('spiral2')
 
 # p0 is first real pressure measurement
 p0 = raw_pressure[np.argmax(np.array(raw_pressure) > 1e5)]
