@@ -6,7 +6,7 @@ from scipy.spatial.transform import Rotation
 from metrics import *
 
 # get data from hdf5
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, gt_timestamp, gt_position, gt_orientation = readHDF5('spiral2')
+raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('spiral2')
 
 # convenience
 X, Y, Z = 0, 1, 2

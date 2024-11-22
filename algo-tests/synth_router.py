@@ -43,23 +43,17 @@ def get_RSSI_MAC(position):
                 (wifi_routers[i][Z] - position[Z]) ** 2
             )
 
-        rssi = rssi_measured_power - 10 * rssi_path_loss_exponent * math.log10(distance)
-        wifi_data.append(rssi)
-
         mac = wifi_routers[i][MAC]
         wifi_data.append(mac)
-    
+        
+        rssi = rssi_measured_power - 10 * rssi_path_loss_exponent * math.log10(distance)
+        wifi_data.append(rssi)
 
     return wifi_data
 
 
 ### TESTING ###
-
-
-
 position = [0, 0, 0]
 
-
-
 wifi_data = get_RSSI_MAC(position)
-print(wifi_data)
+#print(wifi_data)

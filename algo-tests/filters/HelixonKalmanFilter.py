@@ -26,7 +26,7 @@ class HelixonKalmanFilter:
         self.xhat += self.K @ (y - (self.H @ self.xhat))
         self.P = (np.identity(len(self.xhat)) - (self.K @ self.H)) @ self.P
 
-    def run_offlne(self: Self, us: np.ndarray, ys: np.ndarray, ts: np.ndarray) -> np.ndarray:
+    def run_offline(self: Self, us: np.ndarray, ys: np.ndarray, ts: np.ndarray) -> np.ndarray:
         N = len(us)
         states = np.zeros((N, len(self.xhat)))
         for i in range(1, N):
@@ -34,7 +34,6 @@ class HelixonKalmanFilter:
             self.predict(us[i], dt)
             self.update(ys[i])
             states[i] = self.xhat.flatten()
-            print(states[i])
         return states
     
     def run_step(self: Self, u: np.ndarray, y: np.ndarray, dt: float) -> np.ndarray:
