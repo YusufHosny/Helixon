@@ -16,7 +16,6 @@ def storeAsHDF5(dataset_name, raw_data, gt_data, wifidata):
     count_data = np.array([row[1] for row in wifidata])
     bssid_data = np.array([row[i] for row in wifidata for i in range(2, len(row), 2)], dtype=h5py.string_dtype(encoding='utf-8', length=None))
     rssi_data = np.array([row[i] for row in wifidata for i in range(3, len(row), 2)])
-    print(wifidata)
     
     # Ensure ground-truth data is organized correctly: timestamp, position (x, y, z), and orientation (qx, qy, qz, qw)
     gt_timestamp = np.array([row[0] for row in gt_data], dtype=np.float64)

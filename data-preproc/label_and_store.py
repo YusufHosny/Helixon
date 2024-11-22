@@ -110,7 +110,7 @@ def wifiDataIterator(dataset_name):
             elements = line.strip().split(',')
             
             # create a row
-            row_data = [int(e) if e.strip().isnumeric() else e.strip() for e in elements]
+            row_data = [int(e) if e.strip().lstrip('-').isnumeric() else e.strip() for e in elements]
 
             # Append the row directly to wifi_data
             wifi_data.append(row_data)
