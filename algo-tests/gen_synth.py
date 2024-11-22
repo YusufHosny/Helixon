@@ -179,17 +179,19 @@ gtdata = np.concatenate( ((ts*1e6).astype(np.int64), \
                 roll, pitch, yaw), 
                 axis = 1)
 
-wifi = []
-
 # wifi data
+
+wifidata = []
+
 for i in range(N):
     
     if (i % 10 == 0): # Every 10 measurements
+        wifi_row = [gtdata[i][0]]
+        wifi_row.extend(synth_router.get_RSSI_MAC(gt_pos[i]))
+        wifidata.append(wifi_row)
 
-        wifi_row = synth_router.get_RSSI_MAC(gt_pos[i])
-        wifi.append(wifi_row)
+wifidata = np.array(wifidata, dtype = object)
 
-wifidata = np.array(wifi)
 
-print(wifidata)
-#storeAsHDF5('synthetic', data, gtdata, wifidata)
+# store everything in an HDF5 file
+storeAsHDF5('synthetic', data, gtdata, wifidata)
