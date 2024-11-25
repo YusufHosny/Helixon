@@ -6,7 +6,7 @@ from scipy.spatial.transform import Rotation
 from metrics import *
 
 # get data from hdf5
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('spiral2')
+raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('dwifi')
 
 # convenience
 X, Y, Z = 0, 1, 2
@@ -54,6 +54,6 @@ print(f'Absolute Trajectory Error: {ate}\nRelative Trajectory Error: {rte}')
 # plot synth ndi and gt
 fig = plt.figure()
 ax = plt.axes(projection='3d')
-ax.plot3D(pos[:, 0], pos[:, 1], pos[:, 2], 'blue')
+#ax.plot3D(pos[:, 0], pos[:, 1], pos[:, 2], 'blue')
 ax.plot3D(gt_position[:, 0], gt_position[:, 1], gt_position[:, 2], 'gray')
 plt.show()
