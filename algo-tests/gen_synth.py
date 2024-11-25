@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.spatial.transform import Rotation
 from hlxon_hdf5io import *
-import random
 
 
 """
@@ -187,15 +186,8 @@ gtdata = np.concatenate( ((ts*1e6).astype(np.int64), \
 
 
 # wifi data
-routers_n = 10
-
 rssi_measured_power = -40 # typical 1-meter-RSSI for WiFi routers is between -40 and -60 dBm
 rssi_path_loss_exponent = 2 # typical indoor path loss exponent is between 4 and 6
-
-
-# generates random MAC address
-def generate_mac_address():
-    return ":".join(f"{random.randint(0, 255):02x}" for _ in range(6))
 
 X, Y, Z, MAC = 0, 1, 2, 3 # for convenience
 
@@ -213,21 +205,19 @@ wifi_routers = [[-1.9625912635830327, -0.042755400999599624, 0.236777918073553, 
                 [-1.3179787074473732, -1.2796112394304908, 18.53774228686071, 'ec:2a:13:a2:94:dc']]
 
 def get_RSSI_MAC(position):
+    wifi_data = [len(wifi_routers)]
 
-    wifi_data = []
-    wifi_data.append(routers_n)
-
-    for i in range(routers_n):
+    for router in wifi_routers:
         distance = np.sqrt(
-                (wifi_routers[i][X] - position[X]) ** 2 +
-                (wifi_routers[i][Y] - position[Y]) ** 2 +
-                (wifi_routers[i][Z] - position[Z]) ** 2
+                (router[X] - position[X]) ** 2 +
+                (router[Y] - position[Y]) ** 2 +
+                (router[Z] - position[Z]) ** 2
             )
 
-        mac = wifi_routers[i][MAC]
+        mac = router[MAC]
         wifi_data.append(mac)
         
-        rssi = rssi_measured_power - 10 * rssi_path_loss_exponent * math.log10(distance)
+        rssi = rssi_measured_power - 10 * rssi_path_loss_exponent * np.log10(distance)
         wifi_data.append(rssi)
 
     return wifi_data
@@ -239,7 +229,7 @@ for i in range(N):
     
     if (i % 10 == 0): # Every 10 measurements
         wifi_row = [gtdata[i][0]]
-        wifi_row.extend(synth_router.get_RSSI_MAC(gt_pos[i]))
+        wifi_row.extend(get_RSSI_MAC(gt_pos[i]))
         wifidata.append(wifi_row)
 
 wifidata = np.array(wifidata, dtype = object)
