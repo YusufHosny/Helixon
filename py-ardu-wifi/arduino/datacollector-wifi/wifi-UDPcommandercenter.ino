@@ -24,7 +24,7 @@ void startUDPCommandCenter() {
 
   // Stream data if streaming is active
   if (streaming) {
-    if (packetCounter == 0) {  // Send Wi-Fi data
+    if (packetCounter == 99) {  // Send Wi-Fi data
       packetBuffer[0] = 'w';  // Indicate Wi-Fi data
       readInterboardRssis();
       RssiDataEntry wifid;

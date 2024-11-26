@@ -22,22 +22,6 @@ class TCPDataStream(DataStream):
                     with WifiDataManager('wifi.csv') as wdm:
                         with DataManager('raw.csv') as dm:
                             while not self._done:
-                                wifid = WifiDataEntry()
-                                s.sendall(b'wifi\n')
-                                raw_wifi_data = s.recv(256)
-                                
-                                data_entry_struct = struct.unpack('<Lb'+'6B'*25+'x'+'i'*25, raw_wifi_data) # manually padding
-                                wifid.ts = data_entry_struct[0]
-                                wifid.rssiCnt = data_entry_struct[1]
-                                for i in range(wifid.rssiCnt):
-                                    bssid_offset = 2
-                                    rssi_offset = bssid_offset+6*25
-                                    bssid = data_entry_struct[bssid_offset+6*i:bssid_offset+6*(i+1)]
-                                    rssi = data_entry_struct[rssi_offset+i]
-                                    wifid.addData(bssid, rssi)
-                                
-                                wdm.write(wifid)
-                                time.sleep(.01)
                                 for _ in range(10):
                                     s.sendall(b'data\n')
                                     for _ in range(10):
@@ -62,6 +46,22 @@ class TCPDataStream(DataStream):
 
                                         dm.write(d)
                                         time.sleep(.001)
+                                wifid = WifiDataEntry()
+                                s.sendall(b'wifi\n')
+                                raw_wifi_data = s.recv(256)
+                                
+                                data_entry_struct = struct.unpack('<Lb'+'6B'*25+'x'+'i'*25, raw_wifi_data) # manually padding
+                                wifid.ts = data_entry_struct[0]
+                                wifid.rssiCnt = data_entry_struct[1]
+                                for i in range(wifid.rssiCnt):
+                                    bssid_offset = 2
+                                    rssi_offset = bssid_offset+6*25
+                                    bssid = data_entry_struct[bssid_offset+6*i:bssid_offset+6*(i+1)]
+                                    rssi = data_entry_struct[rssi_offset+i]
+                                    wifid.addData(bssid, rssi)
+                                
+                                wdm.write(wifid)
+                                time.sleep(.01)
             except Exception as e:
                 print(e)
 

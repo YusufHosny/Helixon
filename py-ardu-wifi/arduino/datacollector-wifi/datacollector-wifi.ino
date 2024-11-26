@@ -15,8 +15,8 @@ void setup() {
   enable_WiFi();
   connect_WiFi();
 
-  startTCPServer();
-  // startUDPServer();
+  // startTCPServer();
+  startUDPServer();
 
   printWifiData();
 
@@ -27,8 +27,8 @@ void setup() {
 }
 
 void loop() {
-  // startUDPCommandCenter();
-  startTCPCommandCenter();
+  startUDPCommandCenter();
+  // startTCPCommandCenter();
 }
 
 #endif

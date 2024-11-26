@@ -8,12 +8,12 @@ import time
 
 load_dotenv()
 
-#ds = UDPDataStream(os.getenv('ip'), int(os.getenv('port')))
-ds = TCPDataStream(os.getenv('ip'), int(os.getenv('port')))
+ds = UDPDataStream(os.getenv('ip'), int(os.getenv('port')))
+# ds = TCPDataStream(os.getenv('ip'), int(os.getenv('port')))
 ds.start()
 
 
-time.sleep(0.5*60)
+time.sleep(10*60)
 
 ds.terminate()
 print("done.")  
