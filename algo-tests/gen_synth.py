@@ -43,14 +43,14 @@ output columns:
 
 # define time and samples
 total_time          = 45 # sec
-fs                  = 10 # Hz
+fs                  = 20 # Hz
 number_samples_gt   = total_time*fs # ground truth sample count (positions and orientations)
 N                   = number_samples_gt # for convenience
 X, Y, Z             = 0, 1, 2 # for convenience
 
 # define spiral constants
-spiral_r        = 5 # m
-spiral_pitch    = 6 # m
+spiral_r        = 8 # m
+spiral_pitch    = 4 # m
 theta           = np.arctan(spiral_pitch / (2 * np.pi * spiral_r)) # radians
 
 # define ground truth positions and orientations

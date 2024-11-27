@@ -8,13 +8,13 @@ import time
 from model.spiral_model import *
 
 # get data from hdf5
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('dwifi')
+raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('synthetic')
 
 p0 = max(raw_pressure)
 
 # convenience
 Z = 2
-N = len(raw_timestamp)
+N = len(raw_timestamp) 
 
 # remove offsets gt pos and orientation
 gt_position = np.array(gt_position)
@@ -24,7 +24,7 @@ gt_position -= gt_position[0]
 araw = np.array(raw_9dof[:, :3])
 pres = np.array(raw_pressure).reshape((-1, 1))
 alpha = 1.16e-4
-ts = np.array(raw_timestamp)*1e-6
+ts = (np.array(raw_timestamp)*1e-6)
 gt_timestamp = np.array(gt_timestamp)*1e-6
 
 # rotate acceleration to global coords
@@ -83,36 +83,24 @@ def getB(dt: float):
         [dt]            # Velocity
     ])
 
-def align_spirals(predicted_positions, gt_positions):
 
-    predicted_positions = np.array(predicted_positions)
-    gt_positions = np.array(gt_positions)
 
-    # Find x, y bounds for predicted positions
-    x_max_pred = np.max(predicted_positions[:, 0])
-    x_min_pred = np.min(predicted_positions[:, 0])
-    y_max_pred = np.max(predicted_positions[:, 1])
-    y_min_pred = np.min(predicted_positions[:, 1])
+### TEMPORARY METHOD FOR TESING ###
+def ignore_middle_elements_3d(array: np.ndarray, num_elements: int = 10, axis: int = 0) -> np.ndarray:
+    # Define the start and end indices for slicing
+    start = 1750 - num_elements
+    end = 1750 + num_elements
 
-    # Find x, y bounds for ground truth positions
-    x_max_gt = np.max(gt_positions[:, 0])
-    x_min_gt = np.min(gt_positions[:, 0])
+    # Slice the array along the specified axis while preserving other dimensions
+    slices = [slice(None)] * array.ndim
+    slices[axis] = slice(None, start)  # Take all elements before the start
+    part1 = array[tuple(slices)]
 
-    y_max_gt = np.max(gt_positions[:, 1])
-    y_min_gt = np.min(gt_positions[:, 1])
+    slices[axis] = slice(end, None)  # Take all elements after the end
+    part2 = array[tuple(slices)]
 
-    # Compute centroids
-    center_xy_pred = [(x_max_pred + x_min_pred) / 2, (y_max_pred + y_min_pred) / 2]
-    center_xy_gt = [(x_max_gt + x_min_gt) / 2, (y_max_gt + y_min_gt) / 2]
-
-    print(center_xy_pred, center_xy_gt)
-
-    predicted_positions[:,0] += (center_xy_gt[0] - center_xy_pred[0])
-
-    predicted_positions[:,1] += (center_xy_gt[1] - center_xy_pred[1])
-
-    return predicted_positions
-
+    # Concatenate along the specified axis
+    return np.concatenate((part1, part2), axis=axis)
 
 
 
@@ -126,7 +114,7 @@ ys = heights
 us = global_accel_z
 
 # creating spiral model
-spiral_pitch = 5 #m
+spiral_pitch = 4 #m
 spiral_radius = 8 #m
 path_width = 2.4 #m
 Spiral = Spiral(spiral_pitch, spiral_radius, path_width)
@@ -134,7 +122,7 @@ Spiral = Spiral(spiral_pitch, spiral_radius, path_width)
 
 TARGET = 'offline_spiral'
 # PLOTTING
-if TARGET == 'offline':
+if TARGET == 'offline_height':
 
     # Run Kalman Filter offline
     predicted_heights = kf.run_offline(us, ys, ts)[:, 0].reshape(-1, 1)
@@ -161,7 +149,7 @@ if TARGET == 'offline':
     plt.show()
 
 
-elif TARGET == 'online':
+elif TARGET == 'online_height':
 
     tot_time = 0
 
@@ -182,26 +170,41 @@ elif TARGET == 'online':
 
     print("Operating frequency: ", (len(ts)-1)/tot_time, " Hz")
 
+
 elif TARGET == 'offline_spiral':
 
     # Run Kalman Filter offline
     predicted_heights = kf.run_offline(us, ys, ts)[:, 0].reshape(-1, 1)
+
+    # Ignoring middle measurements that go "off spiral" (TEMPORARY YUSUF IT'S TEMPORARY)
+    gt_position = ignore_middle_elements_3d(gt_position, num_elements=100, axis=0) 
+
+    # Generating spiral from "raw heights"
     predicted_positions = []
     for height in predicted_heights:
         predicted_positions.append(Spiral.point_at_z(height))
 
-    predicted_positions = align_spirals(predicted_positions, gt_position)
+    predicted_positions = np.array(predicted_positions)
 
-    # Predicted positions (Spiral model)
+    # Aligning spirals at (x, y) = (0, 0)
+    predicted_positions = Spiral.center_spiral(predicted_positions)
+    gt_position = Spiral.center_spiral(gt_position)
+
+    # Rotating predicted spiral around z-axis so that it matches the groundtruth
+    predicted_positions = Spiral.rotate(predicted_positions, gt_position)
+
+    print(predicted_positions.shape)
+    print(gt_position.shape)
+    # Plotting predicted and gt spirals
     fig = plt.figure()
     ax = plt.axes(projection='3d')
     predicted_positions = np.array(predicted_positions)  # Convert list to NumPy array
     ax.plot3D(predicted_positions[:, 0], predicted_positions[:, 1], predicted_positions[:, 2], 'red', label='Predicted Positions (Kalman)')
     ax.plot3D(gt_position[:, 0], gt_position[:, 1], gt_position[:, 2], 'blue', label='Groundtruth Position')
-
-    
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
     ax.legend()
     plt.show()
+
+
