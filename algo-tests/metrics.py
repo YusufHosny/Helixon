@@ -28,7 +28,7 @@ def compute_absolute_trajectory_error(est: np.ndarray, gt: np.ndarray):
         else:
             # lerp
             ix_2 = np.argmax(gt[:, 0] > ti)
-            ix_1 = gt.shape[0] - np.argmax(np.flip(gt, axis=0) < ti)
+            ix_1 = gt.shape[0] - np.argmax(np.flip(gt, axis=0) < ti) - 1
 
             # lerp formula: y12 = y1 + (t12 - t1) * (y2-y1)/(t2-t1 + stability epsilon)
             gt_lerped[i, :] = gt[ix_1, 1:] + (ti-gt[ix_1, 0])*(gt[ix_2, 1:] - gt[ix_1, 1:])/(gt[ix_2, 0] - gt[ix_1, 0] + 1e-9)
@@ -62,7 +62,7 @@ def compute_relative_trajectory_error(est, gt, delta, max_delta=-1):
         else:
             # lerp
             ix_2 = np.argmax(gt[:, 0] > ti)
-            ix_1 = gt.shape[0] - np.argmax(np.flip(gt, axis=0) < ti)
+            ix_1 = gt.shape[0] - np.argmax(np.flip(gt, axis=0) < ti) - 1
 
             # lerp formula: y12 = y1 + (t12 - t1) * (y2-y1)/(t2-t1 + stability epsilon)
             gt_lerped[i, :] = gt[ix_1, 1:] + (ti-gt[ix_1, 0])*(gt[ix_2, 1:] - gt[ix_1, 1:])/(gt[ix_2, 0] - gt[ix_1, 0] + 1e-9)
