@@ -61,9 +61,9 @@ format:
 # P (measurement cov mat)
 P = np.identity(2) * .01
 # Q (process noise)
-Q = np.identity(2) * .1
+Q = np.identity(2) * 1
 # R (measurement noise)
-R = np.identity(1) * 2.
+R = np.identity(1) * 0.1
 # H (measurement matrix)
 H = np.array([
     [ 1., 0. ], 
@@ -195,6 +195,9 @@ elif TARGET == 'offline_spiral':
 
     print(predicted_positions.shape)
     print(gt_position.shape)
+
+    print(np.max(predicted_positions[:,2]))
+    print(np.max(gt_position[:,2]))
     # Plotting predicted and gt spirals
     fig = plt.figure()
     ax = plt.axes(projection='3d')
