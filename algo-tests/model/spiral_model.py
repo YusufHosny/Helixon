@@ -1,6 +1,9 @@
 import numpy as np
 from typing import Self
 import numpy.linalg
+from scipy.optimize  import fsolve
+import time
+import matplotlib.pyplot as plt
 
 
 class Spiral:
@@ -116,30 +119,118 @@ class Spiral:
         return rotated_positions
 
 
-def point_from_RSSI(self: Self, RSSI: float):
+    def point_from_RSSI(self:Self, RSSI: float, router_point: np.array, current_z: float):
 
-    pi = np.pi
-    r_sp = self.radius
-    pitch = self.pitch
+        # Parameters from the Spiral class
+        r_sp = self.r
+        pitch = self.pitch
 
-    A = -40 
-    n = 4
-    distance = 10 ** ((A - RSSI) / (10 * n))
+        # RSSI parameters
+        rssi_measured_power = -40 #dBm
+        rssi_path_loss_exponent = 2
 
-    theta_sp = (2*pi*z_sp) / pitch
-    theta_pt = 0
+        # Distance from RSSI
+        distance = 10 ** ((rssi_measured_power - RSSI) / (10 * rssi_path_loss_exponent))
 
-    x = theta_sp - theta_pt
+        # Router point to cylindrical coords
+        r_pt = np.sqrt(router_point[0]**2 + router_point[1]**2)
+        theta_pt = np.arctan2(router_point[1], router_point[0]) 
+        z_pt = router_point[2]
+        
+        # Distance equation, solving for z_sp iteratively
+        def equation(z_sp):
+            return (r_sp**2 + r_pt**2 - 2 * r_sp * r_pt * np.cos(((2 * np.pi * z_sp) / pitch) - theta_pt) + (z_pt - z_sp)**2) - distance**2
 
-    # Numerator
-    numerator = 16 * (x + pi / 2) * (pi / 2 - x)
+        # Max number of iterations for faster computation
+        options = {'maxfev': 40}
+
+        # Since there can be many solutions to the equation, we want the one closest to the current location of the person
+        initial_guess = current_z  
+        z_sp = fsolve(equation, initial_guess,full_output=True, **options)
+
+        return self.point_at_z(z_sp[0][0])
+        
+
+################################################################# TESTING ############################################################
+TESTING = True
+
+if (TESTING):
+    # Wifi data from one router
+    rssi_measured_power = -40 # typical 1-meter-RSSI for WiFi routers is between -40 and -60 dBm
+    rssi_path_loss_exponent = 2 # typical indoor path loss exponent is between 4 and 6
+
+    X, Y, Z, MAC = 0, 1, 2, 3 # for convenience
+
+    wifi_router = [-0.9229859736350821, -0.8181204089944636, 8.208368772600491, '45:84:bd:7b:45:8f']
+
+    # For testing, we generate the RSSI of the router depending on the person's location
+    def get_RSSI_MAC(position):
+        wifi_data = []
+
+        distance = np.sqrt(
+                (wifi_router[X] - position[X]) ** 2 +
+                (wifi_router[Y] - position[Y]) ** 2 +
+                (wifi_router[Z] - position[Z]) ** 2
+            )
+
+        mac = wifi_router[MAC]
+        wifi_data.append(mac)
+        
+        rssi = rssi_measured_power - 10 * rssi_path_loss_exponent * np.log10(distance)
+        wifi_data.append(rssi)
+
+        return wifi_data
+
+
+    spiral = Spiral(4, 8, 2.4)
+
+    router = np.array([wifi_router[0],wifi_router[1],wifi_router[2]])
+
+    # Randomly chosen a current location of the person and calculated the distance between them and the router
+    test_point = spiral.point_at_z(3)
+    print("test point, ", test_point)
+
+    test_distance = distance = np.sqrt(
+                (wifi_router[X] - test_point[X]) ** 2 +
+                (wifi_router[Y] - test_point[Y]) ** 2 +
+                (wifi_router[Z] - test_point[Z]) ** 2
+            )
+    print("test distance", test_distance)
+
+    # Retrieved the RSSI depending on the person's location and the router
+    RSSI_test = get_RSSI_MAC(test_point)
+    print("RSSI test", RSSI_test)
+
+    # We use the retrieved RSSI to extrapolate the person's location and verify the distance between the router and the extr. point
+    point_sp = spiral.point_from_RSSI(RSSI_test[1],router)
+    print("extrapoalted point", point_sp)
+
+
+    distance = np.sqrt(
+                (wifi_router[X] - point_sp[X]) ** 2 +
+                (wifi_router[Y] - point_sp[Y]) ** 2 +
+                (wifi_router[Z] - point_sp[Z]) ** 2
+            )
+    print("extrapolated distance", distance)
+
+    ### PLOTTING ###
     
-    # Denominator
-    denominator = 5 * pi**2 - 4 * (x + pi / 2) * (pi / 2 - x)
-    
-    # Function value
-    cos = numerator / denominator
+    # Spiral from "raw heights" for better visualization
+    spirall = []
+    for height in np.linspace(0,13,1000):
+        spirall.append(spiral.point_at_z(height))
+    spirall = np.array(spirall)
 
-    distance = np.sqrt( np.square(r_sp) + np.square(r_pt) - 2*r_sp*r_pt*cos + (z_pt - z_sp)**2 )
+    # Plotting the spiral, the current location and the extrapolated location (from RSSI)
 
-    return 0
+    fig = plt.figure()
+    ax = plt.axes(projection='3d')
+    ax.plot3D(spirall[:,0], spirall[:,1], spirall[:,2], 'red', label='Predicted Positions (Kalman)')
+    ax.scatter(point_sp[0], point_sp[1], point_sp[2], color='red', s=50, label='Point from RSSI')
+    ax.scatter(router[0], router[1], router[2], color='blue', s=50, label='Point')
+
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    ax.legend()
+    plt.show()  

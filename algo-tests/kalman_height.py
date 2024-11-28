@@ -208,6 +208,6 @@ elif TARGET == 'offline_spiral':
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
     ax.legend()
-    #plt.show()
+    plt.show()
 
 
