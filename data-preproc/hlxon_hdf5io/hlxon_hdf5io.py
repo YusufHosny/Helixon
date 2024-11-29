@@ -112,8 +112,7 @@ def storeAsHDF5_path(path, raw_data, gt_data, wifidata):
 
     # Creating a new .h5 file in the HDF5s folder
     file_path = path
-    os.makedirs("data", exist_ok=True)  # Ensure the directory exists
-
+    
     with h5py.File(file_path, 'w') as f:
         # Creating the RAWDATA group
         rawdata_group = f.create_group('RAWDATA')
