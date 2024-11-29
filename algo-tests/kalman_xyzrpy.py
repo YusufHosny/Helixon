@@ -7,7 +7,7 @@ from metrics import *
 import time
 
 # get data from hdf5
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('dwifi')
+raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('RandomUDP6')
 
 
 # p0 is first real pressure measurement
@@ -113,7 +113,7 @@ ys = heights
 us = np.concatenate((accel, gyro), axis=1).reshape((-1, 6, 1))
 
 # PLOTTING
-TARGET = 'height'
+TARGET = 'all'
 
 if TARGET == 'height':
 
@@ -137,8 +137,9 @@ if TARGET == 'height':
 
 elif TARGET == 'all':
 
-    pos = kf.run_offlne(us, ys, ts)[:, :3]
+    pos = kf.run_offline(us, ys, ts)[:, :3]
     print(gt_position)
+    print("Sizes: ",np.max(gt_position[:, 0]) - np.min(gt_position[:, 0]), np.max(gt_position[:, 1])- np.min(gt_position[:, 1]), np.max(gt_position[:, 2])- np.min(gt_position[:, 2]))
     ateKALMAN, rteKALMAN = compute_ate_rte(np.concatenate((np.array(ts).reshape((-1, 1)), pos), axis=1), 
                                         np.concatenate((np.array(gt_timestamp).reshape((-1, 1)), gt_position), axis=1))
     print(f'kalman filter ate: {ateKALMAN} rte: {rteKALMAN}')
@@ -146,7 +147,7 @@ elif TARGET == 'all':
     # plot positions as functions of time
     fig = plt.figure()
     ax = plt.axes(projection='3d')
-    ax.plot3D(pos[:, 0], pos[:, 1], pos[:, 2], 'blue')
+    # ax.plot3D(pos[:, 0], pos[:, 1], pos[:, 2], 'blue')
     ax.plot3D(gt_position[:, 0], gt_position[:, 1], gt_position[:, 2], 'gray')
     plt.show()
 
