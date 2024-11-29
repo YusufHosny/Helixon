@@ -55,7 +55,7 @@ class Spiral:
     def point_at_z(self: Self, z: float) -> np.ndarray:
         theta = 2 * np.pi * (z / self.pitch)  
         x = self.r * (np.cos(theta))      
-        y = self.r * np.sin(theta)            
+        y = - self.r * np.sin(theta)            
         
         return np.array([x, y, z])
 
@@ -152,7 +152,7 @@ class Spiral:
         
 
 ################################################################# TESTING ############################################################
-TESTING = True
+TESTING = False
 
 if (TESTING):
     # Wifi data from one router
