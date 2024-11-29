@@ -8,7 +8,7 @@ import time
 from model.spiral_model import *
 
 # get data from hdf5
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('synthetic')
+raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('dwifi')
 
 p0 = max(raw_pressure)
 
@@ -61,9 +61,9 @@ format:
 # P (measurement cov mat)
 P = np.identity(2) * .01
 # Q (process noise)
-Q = np.identity(2) * 10
+Q = np.identity(2) * 1
 # R (measurement noise)
-R = np.identity(1) * 0.001
+R = np.identity(1) * 1
 # H (measurement matrix)
 H = np.array([
     [ 1., 0. ], 
@@ -114,13 +114,13 @@ ys = heights
 us = global_accel_z
 
 # creating spiral model
-spiral_pitch = 4 #m
+spiral_pitch = 4.2 #m
 spiral_radius = 8 #m
 path_width = 2.4 #m
 Spiral = Spiral(spiral_pitch, spiral_radius, path_width)
 
 
-TARGET = 'offline_spiral'
+TARGET = 'MSE_matrix_tuning'
 # PLOTTING
 if TARGET == 'offline_height':
 
@@ -209,5 +209,54 @@ elif TARGET == 'offline_spiral':
     ax.set_zlabel('Z')
     ax.legend()
     plt.show()
+
+elif TARGET == 'MSE_matrix_tuning':
+    import itertools
+    import random
+
+    # Define ranges for scaling factors (e.g., from 0 to 10)
+    scale_range = [.01, .05, .1, .5, 1]
+
+    # Create combinations of scaling factors
+    combinations = list(itertools.product(scale_range, repeat=4))  # (P, Q, R, H)
+
+    best_combination = None
+    lowest_ate_rte_sum = float('inf')
+
+    for i, (p_scale, q_scale, r_scale, h_scale) in enumerate(combinations):
+        # Scale matrices
+        P = np.identity(2) * p_scale
+        Q = np.identity(2) * q_scale
+        R = np.identity(1) * r_scale
+        H = np.array([
+            [1. * h_scale, 0. * h_scale],
+        ])
+
+        # Initialize Kalman Filter with new matrices
+        kf = HelixonKalmanFilter(getA, getB, P, Q, R, H)
+
+        # Run Kalman Filter offline
+        predicted_heights = kf.run_offline(us, ys, ts)[:, 0].reshape(-1, 1)
+
+        # Calculate ATE and RTE
+        ate, rte = compute_ate_rte(
+            np.concatenate((np.array(ts).reshape((-1, 1)), predicted_heights * np.array([0, 0, 1])), axis=1),
+            np.concatenate((np.array(gt_timestamp).reshape((-1, 1)), gt_position * np.array([0, 0, 1])), axis=1)
+        )
+
+        # Sum errors for evaluation
+        ate_rte_sum = ate + rte
+        if ate_rte_sum < lowest_ate_rte_sum:
+            lowest_ate_rte_sum = ate_rte_sum
+            best_combination = (p_scale, q_scale, r_scale, h_scale)
+
+        # Print progress every 100 iterations
+        if i % 100 == 0:
+            print(f"Iteration {i}/{len(combinations)} - Current Best: {best_combination} with Error Sum: {lowest_ate_rte_sum}")
+
+    # Print final best combination
+    print(f"Best Combination: P={best_combination[0]}, Q={best_combination[1]}, R={best_combination[2]}, H={best_combination[3]}")
+    print(f"Lowest Error Sum (ATE + RTE): {lowest_ate_rte_sum}")
+
 
 
