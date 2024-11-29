@@ -38,6 +38,10 @@ void startTCPServer() {
   server = WiFiServer(3435);
   server.begin();
 }
+void startUDPServer() {  // New function for UDP
+  udp.begin(3435);
+  Serial.println("UDP server started on port 3435.");
+}
 
 void printWifiData() {
   Serial.print("SSID: ");

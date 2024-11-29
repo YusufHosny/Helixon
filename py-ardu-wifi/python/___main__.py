@@ -1,5 +1,5 @@
 
-from dataStream.collectionDataStream import CollectionDataStream
+from dataStream.collectionDataStream import UDPDataStream,TCPDataStream
 from visualizer import Visualizer
 from dotenv import load_dotenv
 import os
@@ -8,11 +8,12 @@ import time
 
 load_dotenv()
 
-ds = CollectionDataStream(os.getenv('ip'), int(os.getenv('port')))
-ds.start('data')
+ds = UDPDataStream(os.getenv('ip'), int(os.getenv('port')))
+# ds = TCPDataStream(os.getenv('ip'), int(os.getenv('port')))
+ds.start()
 
 
-time.sleep(60*12)
+time.sleep(10*60)
 
 ds.terminate()
 print("done.")  

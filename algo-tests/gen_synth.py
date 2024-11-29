@@ -2,6 +2,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation
 from hlxon_hdf5io import *
 
+
 """
 Spiral Synthetic Sensor Data Generator
 
@@ -37,18 +38,22 @@ output columns:
     - tempbmp:      (double C) bmp sensor temperature
     - pressure:     (double Pa) pressure
 
+    - rssiCnt:      (int) Count of found networks
+    - bssids:       (string) Mac Addresses of Networks
+    - rssis:        (int dB) received signal strength intensity for found Networks
+
 """
 
 # define time and samples
 total_time          = 45 # sec
-fs                  = 10 # Hz
+fs                  = 20 # Hz
 number_samples_gt   = total_time*fs # ground truth sample count (positions and orientations)
 N                   = number_samples_gt # for convenience
 X, Y, Z             = 0, 1, 2 # for convenience
 
 # define spiral constants
-spiral_r        = 5 # m
-spiral_pitch    = 6 # m
+spiral_r        = 8 # m
+spiral_pitch    = 4 # m
 theta           = np.arctan(spiral_pitch / (2 * np.pi * spiral_r)) # radians
 
 # define ground truth positions and orientations
@@ -156,6 +161,7 @@ for i in range(N):
     magn[i, Y] += np.random.normal(mean_magnet, std_magnet)
     magn[i, Z] += np.random.normal(mean_magnet, std_magnet)
 
+
 data = np.concatenate( ((ts*1e6).astype(np.int64),
                 accel[:, X].reshape(-1, 1),
                 accel[:, Y].reshape(-1, 1),
@@ -168,6 +174,7 @@ data = np.concatenate( ((ts*1e6).astype(np.int64),
                 magn[:, Z].reshape(-1, 1),
                 roll, pitch, yaw, tbno, tbmp, ps.reshape(-1, 1)),
                     axis=1)
+
 gtdata = np.concatenate( ((ts*1e6).astype(np.int64), \
                 gt_pos[:, 0].reshape(-1, 1), 
                 gt_pos[:, 1].reshape(-1, 1), 
@@ -175,4 +182,58 @@ gtdata = np.concatenate( ((ts*1e6).astype(np.int64), \
                 roll, pitch, yaw), 
                 axis = 1)
 
-storeAsHDF5('synthetic', data, gtdata)
+# generate wifi data
+
+
+# wifi data
+rssi_measured_power = -40 # typical 1-meter-RSSI for WiFi routers is between -40 and -60 dBm
+rssi_path_loss_exponent = 2 # typical indoor path loss exponent is between 4 and 6
+
+X, Y, Z, MAC = 0, 1, 2, 3 # for convenience
+
+
+# generates array of routers, each with x y z coordinates with corresponding MAC address
+wifi_routers = [[-1.9625912635830327, -0.042755400999599624, 0.236777918073553, '9e:2a:ea:04:ac:93'],
+                [-2.86743255185108, 10.230164478313519, 2.373233293431522, 'e2:8c:54:f4:47:9f'],
+                [-2.6049383725563793, 10.992929854309349, 4.82598431890248, 'cc:41:11:fa:b6:f4'],
+                [11.27152174407813, 10.361298068605526, 6.438432335099835, '2d:7a:ed:50:7f:a9'],
+                [-0.9229859736350821, -0.8181204089944636, 8.208368772600491, '45:84:bd:7b:45:8f'],
+                [10.304070899801548, 11.943232998360061, 10.297419378938036, 'cc:c5:88:bb:70:f8'],
+                [10.548371853778425, -2.882304115246261, 12.740700625938995, 'de:be:c6:8f:32:26'],
+                [12.843273134642441, 11.65724374052579, 14.151707456823424, 'c1:ef:d9:17:b4:54'],
+                [12.615689578047608, 10.765756456022414, 16.13282069036388067, '1f:3c:d0:f0:ec:04'],
+                [-1.3179787074473732, -1.2796112394304908, 18.53774228686071, 'ec:2a:13:a2:94:dc']]
+
+def get_RSSI_MAC(position):
+    wifi_data = [len(wifi_routers)]
+
+    for router in wifi_routers:
+        distance = np.sqrt(
+                (router[X] - position[X]) ** 2 +
+                (router[Y] - position[Y]) ** 2 +
+                (router[Z] - position[Z]) ** 2
+            )
+
+        mac = router[MAC]
+        wifi_data.append(mac)
+        
+        rssi = rssi_measured_power - 10 * rssi_path_loss_exponent * np.log10(distance)
+        wifi_data.append(rssi)
+
+    return wifi_data
+
+
+wifidata = []
+
+for i in range(N):
+    
+    if (i % 10 == 0): # Every 10 measurements
+        wifi_row = [gtdata[i][0]]
+        wifi_row.extend(get_RSSI_MAC(gt_pos[i]))
+        wifidata.append(wifi_row)
+
+wifidata = np.array(wifidata, dtype = object)
+
+
+# store everything in an HDF5 file
+storeAsHDF5('synthetic', data, gtdata, wifidata)
