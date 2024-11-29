@@ -88,3 +88,10 @@ def readHDF5(dataset_name):
     return raw_timestamp, raw_nine_dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, \
         wifidata,  \
         gt_timestamp, gt_position, gt_orientation
+
+def readAll():
+    files = os.listdir(os.path.join(os.path.curdir, 'data'))
+    output = []
+    for file in files:
+        output += [readHDF5(file.replace('.h5', ''))]
+    return output

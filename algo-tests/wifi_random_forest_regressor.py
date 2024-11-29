@@ -16,8 +16,7 @@ from sklearn.model_selection import GridSearchCV, train_test_split
 """
 Load Data
 """
-# raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('NormalUDP1')
-dataset = [readAll()[0]]
+dataset = readAll()
 
 
 """
