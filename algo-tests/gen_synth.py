@@ -97,7 +97,6 @@ for i in range(1, N):
     dv = (vraw[i]-vraw[i-1])
     dt = (t[i]-t[i-1])
     araw[i] += dv/dt
-araw[:, Z] += 9.81 # add gravity bc real sensor has z axis flipped
 
 # transform accelerations to device/sensor coord space
 accel = np.zeros_like(gt_pos)

@@ -1,6 +1,0 @@
-hlxon_hdf5io.py
-pyproject.toml
-hlxon_hdf5io.egg-info/PKG-INFO
-hlxon_hdf5io.egg-info/SOURCES.txt
-hlxon_hdf5io.egg-info/dependency_links.txt
-hlxon_hdf5io.egg-info/top_level.txt
