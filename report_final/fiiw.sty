@@ -171,7 +171,7 @@
 \def\@supervisorlabel{Coach}
 \def\@cosupervisorlabel{Co-supervisor(s)}
 \def\@memberlabel{Member of}
-\def\@coverText{Technical paper submitted to obtain the degree of Bachelor of Science in \@program}
+\def\@coverText{Technical paper submitted to obtain the degree of Master of Science in \@program}
 \def\@copyright{This paper is a document that has not been corrected for any errors. Without written permission of the course coordinator and the author(s), it is forbidden to reproduce or adapt in any form or by any means any part of this work. Requests for obtaining the right to reproduce or utilise parts of this work should be addressed to KU Leuven, \@campus, \@campusStreet, \@campusCity, \@campusPhone\space or via e-mail \@campusEmail}
 \def\@copyrightmaterial{A written permission of the course coordinator is also required to use the methods, products, schematics and programs described in this work for industrial or commercial use, and for submitting this work in scientific contests.}
 \def\@acknowledgementslabel{Acknowledgements}
@@ -213,14 +213,12 @@
 \newcommand{\lastnameA}[1]{\gdef\@lastnameA{#1}}
 \newcommand{\firstnameB}[1]{\gdef\@firstnameB{#1}}
 \newcommand{\lastnameB}[1]{\gdef\@lastnameB{#1}}
-% BEGIN IB3 more names in a team
 \newcommand{\firstnameC}[1]{\gdef\@firstnameC{#1}}
 \newcommand{\lastnameC}[1]{\gdef\@lastnameC{#1}}
 \newcommand{\firstnameD}[1]{\gdef\@firstnameD{#1}}
 \newcommand{\lastnameD}[1]{\gdef\@lastnameD{#1}}
 \newcommand{\firstnameE}[1]{\gdef\@firstnameE{#1}}
 \newcommand{\lastnameE}[1]{\gdef\@lastnameE{#1}}
-% END IB3 more names in a team
 \newcommand{\documentlanguage}[1]{\gdef\@documentlanguage{#1}}
 \newcommand{\coverlanguage}[1]{\gdef\@coverlanguage{#1}}
 
@@ -520,13 +518,12 @@
             \@ifundefined{@lastnameB}{}{, \@lastnameB~\@firstnameB}% BEGIN IB3 more names in a team
             \@ifundefined{@lastnameC}{}{, \@lastnameC~\@firstnameC}\@ifundefined{@lastnameD}{}{, \@lastnameD~\@firstnameD}\@ifundefined{@lastnameE}{}{, \@lastnameE~\@firstnameE}% END IB3 more names in a team
 
-			{\small	Bachelor in \@program, \@faculty, \@campus, \@campusStreet, \@campusCity, \@campusCountry}
+			{\small	Master in \@program, \@faculty, \@campus, \@campusStreet, \@campusCity, \@campusCountry}
 
 			\vspace{1.5cm}
 
 			\@supervisorlabel:~\@supervisorname \\
 			{\small\@program, \@faculty, \@campus, \@campusStreet, \@campusCity, \@campusCountry, \@supervisorEmail}
-% No cosupervisor in IB3
 %			\@cosupervisorlabel:~\@cosupervisorAname\@ifundefined{@cosupervisorBname}{}{, \@cosupervisorBname} \\
 %			{\small\@cosupervisorACompany, $<$\@cosupervisorAEmail$>$%
 %				\@ifundefined{@cosupervisorBname}{}{\\\@cosupervisorBCompany, $<$\@cosupervisorBEmail$>$}}
