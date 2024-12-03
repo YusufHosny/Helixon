@@ -8,9 +8,9 @@ import time
 from model.spiral_model import *
 
 # get data from hdf5
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('dwifi')
+raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('NormalUDP2')
 
-p0 = max(raw_pressure)
+p0 = np.mean(raw_pressure[:15])
 
 # convenience
 Z = 2
@@ -28,9 +28,7 @@ ts = (np.array(raw_timestamp)*1e-6)
 gt_timestamp = np.array(gt_timestamp)*1e-6
 
 # rotate acceleration to global coords
-accel = np.zeros_like(araw)
-
-
+accel = np.array(araw)
 for i, orientation in enumerate(raw_rpy):
     
     # check if quat or euler
@@ -41,10 +39,6 @@ for i, orientation in enumerate(raw_rpy):
     accel[i] = rot.apply(araw[i])
 
 global_accel_z = accel[:,Z].reshape(N, 1, 1)
-
-# remove gravity vector
-# minus since z axis is flipped
-# global_accel_z -= 9.81
 
 # --------------------------------
 # kalman filter
@@ -104,7 +98,7 @@ def ignore_middle_elements_3d(array: np.ndarray, num_elements: int = 10, axis: i
 
 
 
-kf = HelixonKalmanFilter(getA, getB, P, Q, R, H)
+kf = HelixonKalmanFilter(getA, getB, P, Q)
 
 # all ys (measurements) for kalman filter
 heights = np.log(pres/p0)/(-alpha)
@@ -120,15 +114,16 @@ path_width = 2.4 #m
 Spiral = Spiral(spiral_pitch, spiral_radius, path_width)
 
 
-TARGET = 'MSE_matrix_tuning'
+TARGET = 'offline_height'
 # PLOTTING
 if TARGET == 'offline_height':
 
     # Run Kalman Filter offline
-    predicted_heights = kf.run_offline(us, ys, ts)[:, 0].reshape(-1, 1)
+    predicted_heights = kf.run_offline(us, ys, H, R, ts)[:, 0].reshape(-1, 1)
     predicted_positions = []
     for height in predicted_heights:
         predicted_positions.append(Spiral.point_at_z(height))
+    predicted_positions = np.array(predicted_positions)
 
     # ATE and RTE for heights only
     ateKALMAN, rteKALMAN = compute_ate_rte(np.concatenate((np.array(ts).reshape((-1, 1)), predicted_heights*np.array([0, 0, 1])), axis=1), 
@@ -145,7 +140,6 @@ if TARGET == 'offline_height':
     ax.plot3D(np.zeros_like(predicted_heights[:, 0]) + 1, ts, predicted_heights[:, 0], 'blue')
     ax.plot3D(np.zeros_like(heights.flatten()) + 2, ts, heights.flatten(), 'red')
     ax.plot3D(np.zeros_like(gt_position[:, 0]), gt_timestamp, gt_position[:, 2], 'gray')
-    ax.plot3D(np.zeros_like(predicted_positions[:,0]), gt_timestamp, gt_position[:, 2], 'green')
     plt.show()
 
 
@@ -160,7 +154,7 @@ elif TARGET == 'online_height':
 
         t1 = time.perf_counter()
         # position estimate
-        estimated_position = kf.run_step(u, y, dt)
+        estimated_position = kf.run_step(u, y, H, R, dt)
 
         t2 = time.perf_counter()
 
@@ -174,7 +168,7 @@ elif TARGET == 'online_height':
 elif TARGET == 'offline_spiral':
 
     # Run Kalman Filter offline
-    predicted_heights = kf.run_offline(us, ys, ts)[:, 0].reshape(-1, 1)
+    predicted_heights = kf.run_offline(us, ys, H, R, ts)[:, 0].reshape(-1, 1)
 
     # Ignoring middle measurements that go "off spiral" (TEMPORARY YUSUF IT'S TEMPORARY)
     gt_position = ignore_middle_elements_3d(gt_position, num_elements=100, axis=0) 
@@ -233,7 +227,7 @@ elif TARGET == 'MSE_matrix_tuning':
         ])
 
         # Initialize Kalman Filter with new matrices
-        kf = HelixonKalmanFilter(getA, getB, P, Q, R, H)
+        kf = HelixonKalmanFilter(getA, getB, P, Q)
 
         # Run Kalman Filter offline
         predicted_heights = kf.run_offline(us, ys, ts)[:, 0].reshape(-1, 1)
