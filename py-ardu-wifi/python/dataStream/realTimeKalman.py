@@ -16,6 +16,16 @@ sys.path.append(base_path)
 # Import the file
 from HelixonKalmanFilter import *
 
+# Dwifi: Best Combination: P=0.01, Q=0.05, R=1, H=1
+# NormalUDP1: Best Combination: P=0.01, Q=0.01, R=1, H=1 (GTE = 14)
+# NormalUDP1: 
+# RandomUP1: Best Combination: P=0.01, Q=1, R=0.01, H=1 (GTE = 0.89)
+# RandomUP2: Best Combination: P=0.01, Q=0.01, R=1, H=1 (GTE = 13)
+# RandomUP3: Best Combination: P=0.01, Q=0.01, R=1, H=1 (GTE = 5)
+# RandomUP4: Best Combination: P=0.01, Q=0.01, R=1, H=1 (GTE = 16)
+# RandomUP5: Best Combination: P=0.01, Q=0.01, R=1, H=1 (GTE = 7)
+# RandomUP6: Best Combination: P=0.01, Q=1, R=0.01, H=1 (GTE = 5)
+
 # P (measurement cov mat)
 P = np.identity(2) * .01
 # Q (process noise)
@@ -91,7 +101,7 @@ class UDPDataStream(DataStream):
                                     accel[i] = rot.apply(araw[i])
 
                                     global_accel_z = accel[:,Z].reshape(N, 1, 1)
-                                    
+
                                 wdm.write(wifid)
 
 
