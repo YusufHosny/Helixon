@@ -47,15 +47,15 @@ class Spiral:
 
         # Transform back to Cartesian coordinates
         x_sp = self.r * np.cos(theta_sp)
-        y_sp = self.r * np.sin(theta_sp)
+        y_sp = self.r * -np.sin(theta_sp)
 
         return np.array([x_sp, y_sp, z_sp])
 
 
     def point_at_z(self: Self, z: float) -> np.ndarray:
         theta = 2 * np.pi * (z / self.pitch)  
-        x = self.r * (np.cos(theta))      
-        y = - self.r * np.sin(theta)            
+        x = self.r * np.cos(theta)    
+        y = - self.r * np.sin(theta)      
         
         return np.array([x, y, z])
 
@@ -89,35 +89,6 @@ class Spiral:
 
         return spiral
     
-
-    ### Rotates first spiral so that it matches the second one
-    def rotate(self: Self, rotating_spiral, reference_spiral):
-
-        rotating_spiral = np.array(rotating_spiral, dtype=float).reshape(-1, 3)
-        reference_spiral = np.array(reference_spiral, dtype=float).reshape(-1, 3)
-        
-        # Get the starting points of the predicted and groundtruth spirals
-        predicted_start = rotating_spiral[0, :2]  # XY of predicted
-        gt_start = reference_spiral[0, :2]  # XY of groundtruth
-        
-        # Angle between the two vectors in the XY plane
-        dot_product = np.dot(predicted_start, gt_start)
-        norm_red = np.linalg.norm(predicted_start)
-        norm_blue = np.linalg.norm(gt_start)
-        angle = np.arccos(dot_product / (norm_red * norm_blue))
-        
-        # 2D rotation matrix for rotation around the z-axis
-        rotation_matrix = np.array([
-            [np.cos(-angle), -np.sin(-angle), 0],
-            [np.sin(-angle),  np.cos(-angle), 0],
-            [0,               0,              1]
-        ])
-        
-        # Apply rotation to all points in the red (predicted) spiral
-        rotated_positions = np.dot(rotating_spiral, rotation_matrix.T)
-        
-        return rotated_positions
-
 
     def point_from_RSSI(self:Self, RSSI: float, router_point: np.array, current_z: float):
 
