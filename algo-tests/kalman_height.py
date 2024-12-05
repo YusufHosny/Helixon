@@ -10,8 +10,6 @@ from model.spiral_model import *
 # get data from hdf5
 raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('NormalUDP2')
 
-p0 = np.mean(raw_pressure[:15])
-
 # convenience
 Z = 2
 N = len(raw_timestamp) 
@@ -24,8 +22,12 @@ gt_position -= gt_position[0]
 araw = np.array(raw_9dof[:, :3])
 pres = np.array(raw_pressure).reshape((-1, 1))
 alpha = 1.16e-4
-ts = (np.array(raw_timestamp)*1e-6)
+ts = np.array(raw_timestamp)*1e-6
 gt_timestamp = np.array(gt_timestamp)*1e-6
+
+# define p0
+p0 = np.mean(raw_pressure[:200])
+pres[np.where(pres > p0)] = p0
 
 # rotate acceleration to global coords
 accel = np.array(araw)

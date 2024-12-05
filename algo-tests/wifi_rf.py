@@ -25,15 +25,17 @@ Load Data
 dataset = readAll()
 
 """
-Define BSSID mapping
+Load Model
 """
-bssids = []
-for sequence in dataset:
-    _, _, _, _, _, _, wifidata, gt_timestamp, gt_position, _ = sequence
+from pickle import load
+with open(os.path.join("model", "wifi_model.pkl"), "rb") as f:
+    best_rf = load(f)
 
-    bssids += [np.array([[row[i].decode() for i in range(2, len(row), 2)] for row in wifidata])]
-
-bssidMap = np.unique(np.concatenate(bssids).flatten())
+"""
+Load BSSID mapping
+"""
+with open(os.path.join("model", "bssid_map.pkl"), "rb") as f:
+    bssidMap = load(f)
 
 
 """
@@ -92,13 +94,6 @@ X_unseen, y_unseen = Xs[-1], ys[-1]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15)
 
-
-"""
-Load Model
-"""
-from pickle import load
-with open(os.path.join("model", "wifi_model.pkl"), "rb") as f:
-    best_rf = load(f)
 
 """
 Evaluate Model on test split (Quantitative)

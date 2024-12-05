@@ -204,6 +204,9 @@ ax.plot(y_unseen[:, X], y_unseen[:, Y], y_unseen[:, Z], color=(0., 0., 1., 0.3),
 ax.scatter(y_approx[:, X], y_approx[:, Y], y_approx[:, Z], 'red')
 ax.plot(y_approx[:, X], y_approx[:, Y], y_approx[:, Z], color=(1., 0., 0., 0.3), linestyle='--')
 
+ax.scatter(y_pred[:, X], y_pred[:, Y], y_pred[:, Z], 'gray')
+ax.plot(y_pred[:, X], y_pred[:, Y], y_pred[:, Z], color=(1., 0., 0., 0.3), linestyle='--')
+
 plt.show()
 
 """
@@ -213,3 +216,5 @@ if SAVEMODEL:
     from pickle import dump
     with open(os.path.join("model", "wifi_model.pkl"), "wb") as f:
         dump(best_rf, f, protocol=5)
+    with open(os.path.join("model", "bssid_map.pkl"), "wb") as f:
+            dump(bssidMap, f, protocol=5)

@@ -12,6 +12,8 @@ class Spiral:
         self.pitch = pitch
         self.r = radius
         self.pathwidth = pathwidth
+        self.center = np.zeros((2, ))
+        self.phase = 0
 
     ### Finds the closest point from a random point to the helix
     def closest_point_to(self: Self, random_pt: np.ndarray) -> np.ndarray:
@@ -54,8 +56,8 @@ class Spiral:
 
     def point_at_z(self: Self, z: float) -> np.ndarray:
         theta = 2 * np.pi * (z / self.pitch)  
-        x = self.r * np.cos(theta)    
-        y = - self.r * np.sin(theta)      
+        x = self.center[0] + self.r * np.cos(theta + self.phase) 
+        y = self.center[1] - self.r * np.sin(theta + self.phase)      
         
         return np.array([x, y, z])
 
@@ -89,8 +91,17 @@ class Spiral:
 
         return spiral
     
+    def align_to_spiral(self: Self, spiral: np.ndarray):
+        # Find x, y bounds for predicting center
+        x_max_spiral = np.max(spiral[:, 0])
+        x_min_spiral = np.min(spiral[:, 0])
+        y_max_spiral = np.max(spiral[:, 1])
+        y_min_spiral = np.min(spiral[:, 1])
 
-    def point_from_RSSI(self:Self, RSSI: float, router_point: np.array, current_z: float):
+        # Compute centroids
+        self.center = [(x_max_spiral + x_min_spiral) / 2, (y_max_spiral + y_min_spiral) / 2]
+
+    def point_from_RSSI(self:Self, RSSI: float, router_point: np.ndarray, current_z: float):
 
         # Parameters from the Spiral class
         r_sp = self.r
@@ -117,7 +128,7 @@ class Spiral:
 
         # Since there can be many solutions to the equation, we want the one closest to the current location of the person
         initial_guess = current_z  
-        z_sp = fsolve(equation, initial_guess,full_output=True, **options)
+        z_sp = fsolve(equation, initial_guess, full_output=True, **options)
 
         return self.point_at_z(z_sp[0][0])
         
