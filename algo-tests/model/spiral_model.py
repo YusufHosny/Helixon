@@ -12,6 +12,8 @@ class Spiral:
         self.pitch = pitch
         self.r = radius
         self.pathwidth = pathwidth
+        self.center = np.zeros((2, ))
+        self.phase = 0
 
     ### Finds the closest point from a random point to the helix
     def closest_point_to(self: Self, random_pt: np.ndarray) -> np.ndarray:
@@ -47,15 +49,15 @@ class Spiral:
 
         # Transform back to Cartesian coordinates
         x_sp = self.r * np.cos(theta_sp)
-        y_sp = self.r * np.sin(theta_sp)
+        y_sp = self.r * -np.sin(theta_sp)
 
         return np.array([x_sp, y_sp, z_sp])
 
 
     def point_at_z(self: Self, z: float) -> np.ndarray:
         theta = 2 * np.pi * (z / self.pitch)  
-        x = self.r * (np.cos(theta))      
-        y = self.r * np.sin(theta)            
+        x = self.center[0] + self.r * np.cos(theta + self.phase) 
+        y = self.center[1] - self.r * np.sin(theta + self.phase)      
         
         return np.array([x, y, z])
 
@@ -89,37 +91,17 @@ class Spiral:
 
         return spiral
     
+    def align_to_spiral(self: Self, spiral: np.ndarray):
+        # Find x, y bounds for predicting center
+        x_max_spiral = np.max(spiral[:, 0])
+        x_min_spiral = np.min(spiral[:, 0])
+        y_max_spiral = np.max(spiral[:, 1])
+        y_min_spiral = np.min(spiral[:, 1])
 
-    ### Rotates first spiral so that it matches the second one
-    def rotate(self: Self, rotating_spiral, reference_spiral):
+        # Compute centroids
+        self.center = [(x_max_spiral + x_min_spiral) / 2, (y_max_spiral + y_min_spiral) / 2]
 
-        rotating_spiral = np.array(rotating_spiral, dtype=float).reshape(-1, 3)
-        reference_spiral = np.array(reference_spiral, dtype=float).reshape(-1, 3)
-        
-        # Get the starting points of the predicted and groundtruth spirals
-        predicted_start = rotating_spiral[0, :2]  # XY of predicted
-        gt_start = reference_spiral[0, :2]  # XY of groundtruth
-        
-        # Angle between the two vectors in the XY plane
-        dot_product = np.dot(predicted_start, gt_start)
-        norm_red = np.linalg.norm(predicted_start)
-        norm_blue = np.linalg.norm(gt_start)
-        angle = np.arccos(dot_product / (norm_red * norm_blue))
-        
-        # 2D rotation matrix for rotation around the z-axis
-        rotation_matrix = np.array([
-            [np.cos(-angle), -np.sin(-angle), 0],
-            [np.sin(-angle),  np.cos(-angle), 0],
-            [0,               0,              1]
-        ])
-        
-        # Apply rotation to all points in the red (predicted) spiral
-        rotated_positions = np.dot(rotating_spiral, rotation_matrix.T)
-        
-        return rotated_positions
-
-
-    def point_from_RSSI(self:Self, RSSI: float, router_point: np.array, current_z: float):
+    def point_from_RSSI(self:Self, RSSI: float, router_point: np.ndarray, current_z: float):
 
         # Parameters from the Spiral class
         r_sp = self.r
@@ -146,13 +128,13 @@ class Spiral:
 
         # Since there can be many solutions to the equation, we want the one closest to the current location of the person
         initial_guess = current_z  
-        z_sp = fsolve(equation, initial_guess,full_output=True, **options)
+        z_sp = fsolve(equation, initial_guess, full_output=True, **options)
 
         return self.point_at_z(z_sp[0][0])
         
 
 ################################################################# TESTING ############################################################
-TESTING = True
+TESTING = False
 
 if (TESTING):
     # Wifi data from one router

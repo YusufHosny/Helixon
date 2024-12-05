@@ -113,3 +113,32 @@ def compute_heading_error(est, gt):
     angle = np.arccos(np.clip(dot_prod, a_min=-1, a_max=1))
 
     return mse_error, angle
+
+
+
+def compute_average_trajectory_error(est: np.ndarray, gt: np.ndarray):
+    """
+    Args:
+        est: estimated trajectory. timestamped in shape (N, 2)
+        gt: ground truth trajectory. timestamped in shape (M, 2)
+
+    Return:
+        Absolution trajectory error, which is the Root Mean Squared Error between
+        two trajectories.
+    """
+    gt_lerped = np.zeros_like(est[:, 1:])
+    gt_lerped[:, 0] = est[:, 0]
+
+    for i, (ti, _, _, _) in enumerate(est):
+        if ti in gt[:, 0]:
+            gt_lerped[i, :] = gt[np.argmax(gt[:, 0] == ti), 1:]
+        else:
+            # lerp
+            ix_2 = np.argmax(gt[:, 0] > ti)
+            ix_1 = gt.shape[0] - np.argmax(np.flip(gt, axis=0) < ti) - 1
+
+            # lerp formula: y12 = y1 + (t12 - t1) * (y2-y1)/(t2-t1 + stability epsilon)
+            gt_lerped[i, :] = gt[ix_1, 1:] + (ti-gt[ix_1, 0])*(gt[ix_2, 1:] - gt[ix_1, 1:])/(gt[ix_2, 0] - gt[ix_1, 0] + 1e-9)
+
+
+    return np.mean(abs(est[:, 1:] - gt_lerped))
