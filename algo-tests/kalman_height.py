@@ -8,7 +8,11 @@ import time
 from model.spiral_model import *
 
 # get data from hdf5
+<<<<<<< HEAD
+raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('RandomUDP4')
+=======
 raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('NormalUDP2')
+>>>>>>> 8a7e39511ca4bd61112eae1cc1d15179509f3d1f
 
 # convenience
 Z = 2
@@ -55,9 +59,9 @@ format:
 
 
 # P (measurement cov mat)
-P = np.identity(2) * .01
+P = np.identity(2) * .0001
 # Q (process noise)
-Q = np.identity(2) * 1
+Q = np.identity(2) * .01
 # R (measurement noise)
 R = np.identity(1) * 1
 # H (measurement matrix)
@@ -116,7 +120,12 @@ path_width = 2.4 #m
 Spiral = Spiral(spiral_pitch, spiral_radius, path_width)
 
 
+<<<<<<< HEAD
+TARGET = 'MSE_matrix_tuning'
+
+=======
 TARGET = 'offline_height'
+>>>>>>> 8a7e39511ca4bd61112eae1cc1d15179509f3d1f
 # PLOTTING
 if TARGET == 'offline_height':
 
@@ -208,24 +217,25 @@ elif TARGET == 'offline_spiral':
 
 elif TARGET == 'MSE_matrix_tuning':
     import itertools
-    import random
 
     # Define ranges for scaling factors (e.g., from 0 to 10)
-    scale_range = [.01, .05, .1, .5, 1]
+    scale_range = [0.0, 0.20, 0.41, 0.61, 0.82, 1.02, 1.22, 1.43, 1.63, 1.84,
+2.04, 2.24, 2.45, 2.65, 2.86, 3.06, 3.27, 3.47, 3.67, 3.88,
+4.08, 4.29, 4.49, 4.69, 4.90, 5.10, 5.31, 5.51, 5.71, 5.92,
+6.12, 6.33, 6.53, 6.73, 6.94, 7.14, 7.35, 7.55, 7.76, 7.96,
+8.16, 8.37, 8.57, 8.78, 8.98, 9.18, 9.39, 9.59, 9.80, 10.0]
 
     # Create combinations of scaling factors
-    combinations = list(itertools.product(scale_range, repeat=4))  # (P, Q, R, H)
-
     best_combination = None
     lowest_ate_rte_sum = float('inf')
 
-    for i, (p_scale, q_scale, r_scale, h_scale) in enumerate(combinations):
+    for i, (r_scale) in enumerate(scale_range):
         # Scale matrices
-        P = np.identity(2) * p_scale
-        Q = np.identity(2) * q_scale
-        R = np.identity(1) * r_scale
+        P = np.identity(2) * 0.001
+        Q = np.identity(2) * 0.005
+        R = np.identity(1) * scale_range[i]
         H = np.array([
-            [1. * h_scale, 0. * h_scale],
+            [1. , 0. ],
         ])
 
         # Initialize Kalman Filter with new matrices
@@ -234,25 +244,32 @@ elif TARGET == 'MSE_matrix_tuning':
         # Run Kalman Filter offline
         predicted_heights = kf.run_offline(us, ys, ts)[:, 0].reshape(-1, 1)
 
+
+        # Find the index where the timestamp exceeds 60 seconds
+        time_limit = 60  # seconds
+        index_limit_predicted = np.argmax(ts > time_limit)  # Finds the first occurrence where the condition is True
+
+        index_limit_gt = np.argmax(gt_timestamp > time_limit)  # Finds the first occurrence where the condition is True
+
         # Calculate ATE and RTE
         ate, rte = compute_ate_rte(
-            np.concatenate((np.array(ts).reshape((-1, 1)), predicted_heights * np.array([0, 0, 1])), axis=1),
-            np.concatenate((np.array(gt_timestamp).reshape((-1, 1)), gt_position * np.array([0, 0, 1])), axis=1)
+            np.concatenate((np.array(ts[:index_limit_predicted]).reshape((-1, 1)), predicted_heights[:index_limit_predicted,:] * np.array([0, 0, 1])), axis=1),
+            np.concatenate((np.array(gt_timestamp[:index_limit_gt]).reshape((-1, 1)), gt_position[:index_limit_gt,:] * np.array([0, 0, 1])), axis=1)
         )
 
         # Sum errors for evaluation
         ate_rte_sum = ate + rte
         if ate_rte_sum < lowest_ate_rte_sum:
             lowest_ate_rte_sum = ate_rte_sum
-            best_combination = (p_scale, q_scale, r_scale, h_scale)
+            best_combination = (r_scale)
 
         # Print progress every 100 iterations
         if i % 100 == 0:
-            print(f"Iteration {i}/{len(combinations)} - Current Best: {best_combination} with Error Sum: {lowest_ate_rte_sum}")
+            print(f"Iteration {i} - Current Best: {best_combination} with Error Sum: {lowest_ate_rte_sum}")
 
     # Print final best combination
-    print(f"Best Combination: P={best_combination[0]}, Q={best_combination[1]}, R={best_combination[2]}, H={best_combination[3]}")
-    print(f"Lowest Error Sum (ATE + RTE): {lowest_ate_rte_sum}")
+    print(f"Best Combination: R={best_combination}")
+    print(f"Giulio Error Sum (ATE + RTE): {lowest_ate_rte_sum}")
 
 
 
