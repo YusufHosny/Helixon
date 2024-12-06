@@ -8,11 +8,7 @@ import time
 from model.spiral_model import *
 
 # get data from hdf5
-<<<<<<< HEAD
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('RandomUDP4')
-=======
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('NormalUDP2')
->>>>>>> 8a7e39511ca4bd61112eae1cc1d15179509f3d1f
+raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('RandomUDP6')
 
 # convenience
 Z = 2
@@ -120,12 +116,8 @@ path_width = 2.4 #m
 Spiral = Spiral(spiral_pitch, spiral_radius, path_width)
 
 
-<<<<<<< HEAD
-TARGET = 'MSE_matrix_tuning'
-
-=======
 TARGET = 'offline_height'
->>>>>>> 8a7e39511ca4bd61112eae1cc1d15179509f3d1f
+
 # PLOTTING
 if TARGET == 'offline_height':
 
@@ -196,7 +188,7 @@ elif TARGET == 'offline_spiral':
     gt_position = Spiral.center_spiral(gt_position)
 
     # Rotating predicted spiral around z-axis so that it matches the groundtruth
-    predicted_positions = Spiral.rotate(predicted_positions, gt_position)
+    #predicted_positions = Spiral.rotate(predicted_positions, gt_position)
 
     print(predicted_positions.shape)
     print(gt_position.shape)
@@ -220,10 +212,10 @@ elif TARGET == 'MSE_matrix_tuning':
 
     # Define ranges for scaling factors (e.g., from 0 to 10)
     scale_range = [0.0, 0.20, 0.41, 0.61, 0.82, 1.02, 1.22, 1.43, 1.63, 1.84,
-2.04, 2.24, 2.45, 2.65, 2.86, 3.06, 3.27, 3.47, 3.67, 3.88,
-4.08, 4.29, 4.49, 4.69, 4.90, 5.10, 5.31, 5.51, 5.71, 5.92,
-6.12, 6.33, 6.53, 6.73, 6.94, 7.14, 7.35, 7.55, 7.76, 7.96,
-8.16, 8.37, 8.57, 8.78, 8.98, 9.18, 9.39, 9.59, 9.80, 10.0]
+                   2.0, 2.24, 2.45, 2.65, 2.86, 3.06, 3.27, 3.47, 3.67, 3.88,
+                   4.0, 4.29, 4.49, 4.69, 4.90, 5.10, 5.31, 5.51, 5.71, 5.92,
+                   6.1, 6.33, 6.53, 6.73, 6.94, 7.14, 7.35, 7.55, 7.76, 7.96,
+                   8.1, 8.37, 8.57, 8.78, 8.98, 9.18, 9.39, 9.59, 9.80, 10.0]
 
     # Create combinations of scaling factors
     best_combination = None
