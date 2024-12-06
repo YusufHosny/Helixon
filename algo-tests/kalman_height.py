@@ -8,11 +8,7 @@ import time
 from model.spiral_model import *
 
 # get data from hdf5
-<<<<<<< HEAD
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('RandomUDP4')
-=======
 raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('NormalUDP2')
->>>>>>> 8a7e39511ca4bd61112eae1cc1d15179509f3d1f
 
 # convenience
 Z = 2
@@ -59,11 +55,11 @@ format:
 
 
 # P (measurement cov mat)
-P = np.identity(2) * .0001
+P = np.identity(2) * .01
 # Q (process noise)
 Q = np.identity(2) * .01
 # R (measurement noise)
-R = np.identity(1) * 1
+R = np.identity(1) * .1
 # H (measurement matrix)
 H = np.array([
     [ 1., 0. ], 
@@ -120,12 +116,7 @@ path_width = 2.4 #m
 Spiral = Spiral(spiral_pitch, spiral_radius, path_width)
 
 
-<<<<<<< HEAD
-TARGET = 'MSE_matrix_tuning'
-
-=======
 TARGET = 'offline_height'
->>>>>>> 8a7e39511ca4bd61112eae1cc1d15179509f3d1f
 # PLOTTING
 if TARGET == 'offline_height':
 
