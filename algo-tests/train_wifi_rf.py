@@ -85,10 +85,10 @@ for sequence in dataset:
     ys += [yi]
 
 # split data
-X = np.concatenate(Xs[:-1])
-y = np.concatenate(ys[:-1])
+X = np.concatenate(Xs[1:])
+y = np.concatenate(ys[1:])
 
-X_unseen, y_unseen = Xs[-1], ys[-1]
+X_unseen, y_unseen = Xs[0], ys[0]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15)
 

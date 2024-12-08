@@ -1,3 +1,8 @@
+"""
+Kalman Filter using IMU and WiFi data
+Additionally low pass filters outputs and incorporates floorplan data
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from hlxon_hdf5io import *
@@ -6,12 +11,28 @@ from filters.HelixonKalmanFilter import *
 from metrics import *
 import time
 
+"""
+Load data
+"""
+print('Loading data...', end='')
 # get data from hdf5
 raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('RandomUDP6')
+print('Done.')
 
+
+"""
+Preprocess some data
+"""
+print('Processing data...', end='')
 # convenience
 X, Y, Z = 0, 1, 2
 N = len(raw_timestamp)
+
+# process wifi data
+wifi_timestamp = np.array([row[0] for row in wifidata])*1e-6
+wifi_cnts = np.array([row[1] for row in wifidata])
+bssids = np.array([[row[i].decode() for i in range(2, len(row), 2)] for row in wifidata])
+rssis = np.array([[row[i] for i in range(3, len(row), 2)]  for row in wifidata])
 
 # get sensor data
 araw = np.array(raw_9dof[:, :3])
@@ -26,9 +47,10 @@ gt_timestamp = np.array(gt_timestamp)*1e-6
 p0 = np.mean(raw_pressure[:200])
 pres[np.where(pres > p0)] = p0
 
-# remove offsets gt pos and orientation
+# remove offsets gt pos
+offset =  gt_position[0]
 gt_position = np.array(gt_position)
-gt_position -= gt_position[0]
+gt_position -= offset
 
 # rotate acceleration to global coords
 accel = np.zeros_like(araw)
@@ -40,12 +62,11 @@ for i, orientation in enumerate(raw_rpy):
     else:
         rot = Rotation.from_euler('xyz', orientation, degrees=True).inv()
     accel[i] = rot.apply(araw[i])
+print('Done.')
 
-
-# --------------------------------
-# kalman filter
-# --------------------------------
 """
+Kalman Filter Definition
+
 State Vector
 
 format:
@@ -53,14 +74,13 @@ format:
     - [0:6] velocities x y z (m/s global coords)
 """
 
-
 # P (measurement cov mat)
 P = np.identity(6) * .01
 # Q (process noise)
-Q = np.identity(6) * 1
+Q = np.identity(6) * 30
 # R (measurement noise)
-R_PRESSURE = np.diag([700., 700., 10.])
-R_WIFI = np.diag([700., 700., 10000.])
+R_PRESSURE = np.diag([10., 10., 1.]) * 1
+R_WIFI = np.diag([1., 1., 100.]) * 10000
 # H (measurement matrix)
 H_PRESSURE = np.array([
     [1., 0., 0., 0., 0., 0.],
@@ -101,17 +121,7 @@ def getB(dt: float):
 kf = HelixonKalmanFilter(getA, getB, P, Q)
 
 """
-Preprocess some data
-"""
-# load wifi data
-wifi_timestamp = np.array([row[0] for row in wifidata])*1e-6
-wifi_cnts = np.array([row[1] for row in wifidata])
-bssids = np.array([[row[i].decode() for i in range(2, len(row), 2)] for row in wifidata])
-rssis = np.array([[row[i] for i in range(3, len(row), 2)]  for row in wifidata])
-
-
-"""
-Load Model
+Load Wifi Random Forest Regression Model
 """
 from pickle import load
 with open(os.path.join("model", "wifi_model.pkl"), "rb") as f:
@@ -180,7 +190,7 @@ def getNext():
 """
 Execute Kalman filter
 """
-
+print('Running Kalman Filter...', end='')
 pos = []
 times = []
 heights = []
@@ -202,7 +212,7 @@ while hasNext():
         kf.update(spiral.point_at_z(height).reshape((3, 1)), H_PRESSURE, R_PRESSURE)
 
 
-    elif datatype == 'wifi':
+    if datatype == 'wifi':
         # reorganize data
         data, ti = data
         position = best_rf.predict(data)[0]
@@ -212,30 +222,35 @@ while hasNext():
 
         # update
         position = np.array(position).flatten()
-        input = spiral.closest_point_to(position).reshape((3, 1))
-        pwifi += [input]
+        input = position.reshape((3, 1))
+        pwifi += [position]
         kf.update(input, H_WIFI, R_WIFI)
 
     pos += [kf.xhat.flatten()[:3]]
     times += [ti]
 
 pos = np.array(pos)
-pwifi = np.array(pwifi)
+pwifi = np.array(pwifi) - offset
 heights = np.array(heights)
+print('Done.')
 
 """
 Filter/Process output
 """
-from scipy.signal import butter, sosfiltfilt
+# print('Filtering and postprocessing output...', end='')
+# from scipy.signal import butter, sosfiltfilt
 
-sos = butter(200, .3, btype='low', output='sos')
-Xs = sosfiltfilt(sos, pos[:, X])
-Ys = sosfiltfilt(sos, pos[:, Y])
-pos[:, X] = Xs
-pos[:, Y] = Ys
+# sos = butter(200, .3, btype='low', output='sos')
+# Xs = sosfiltfilt(sos, pos[:, X])
+# Ys = sosfiltfilt(sos, pos[:, Y])
+# pos[:, X] = Xs
+# pos[:, Y] = Ys
+# print('Done.')
+
 """
-Plot Results
+Evaluate Results
 """
+print('Evaluating Results...')
 ateKALMAN, rteKALMAN = compute_ate_rte(np.concatenate((np.array(times).reshape((-1, 1)), pos), axis=1), 
                                     np.concatenate((np.array(gt_timestamp).reshape((-1, 1)), gt_position), axis=1))
 print(f'kalman filter ate: {ateKALMAN} rte: {rteKALMAN}')
@@ -243,11 +258,16 @@ avgError = compute_average_trajectory_error(np.concatenate((np.array(times).resh
                                     np.concatenate((np.array(gt_timestamp).reshape((-1, 1)), gt_position), axis=1))
 print(f'Average Trajectory Error {avgError}')
 
+"""
+Plot Results
+"""
+
+print('Plotting Results...')
 # plot positions as functions of time
 fig = plt.figure()
 ax = plt.axes(projection='3d')
 ax.plot3D(pos[:, 0], pos[:, 1], pos[:, 2], 'blue')
-# ax.plot3D(pwifi[:, 0], pwifi[:, 1], pwifi[:, 2], 'green')
+ax.plot3D(pwifi[:, 0], pwifi[:, 1], pwifi[:, 2], 'green')
 # ax.plot3D(np.zeros_like(heights.flatten()) + 2, ts[1:], heights.flatten(), 'red')
 ax.plot3D(gt_position[:, 0], gt_position[:, 1], gt_position[:, 2], 'gray')
 plt.show()
