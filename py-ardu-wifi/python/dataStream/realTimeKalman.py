@@ -16,22 +16,15 @@ with open(os.path.join("model", "wifi_model.pkl"), "rb") as f:
 with open(os.path.join("model", "bssid_map.pkl"), "rb") as f:
     bssidMap = load(f)
 
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure1, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('RandomUDP1')
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure2, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('RandomUDP2')
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure3, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('RandomUDP3')
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure4, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('RandomUDP4')
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure5, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('RandomUDP5')
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure6, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('RandomUDP6')
+dataset = readAll()
 
-p0_1 = np.mean(raw_pressure1[:200])
-p0_2 = np.mean(raw_pressure2[:200])
-p0_3 = np.mean(raw_pressure3[:200])
-p0_4 = np.mean(raw_pressure4[:200])
-p0_5 = np.mean(raw_pressure5[:200])
-p0_6 = np.mean(raw_pressure6[:200])
+ps = []
+for sequence in dataset:
+    _, _, _, _, _, raw_pressure1, _, _, _, _ = sequence
+    ps += raw_pressure1[:200]
 
 alpha = 1.16e-4
-p0 = np.mean(p0_1, p0_2, p0_3, p0_4, p0_5, p0_6)
+p0 = np.mean(ps)
 
 # P (measurement cov mat)
 P = np.identity(2) * .0001
