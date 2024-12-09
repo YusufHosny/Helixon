@@ -46,14 +46,14 @@ output columns:
 
 # define time and samples
 total_time          = 45 # sec
-fs                  = 10 # Hz
+fs                  = 20 # Hz
 number_samples_gt   = total_time*fs # ground truth sample count (positions and orientations)
 N                   = number_samples_gt # for convenience
 X, Y, Z             = 0, 1, 2 # for convenience
 
 # define spiral constants
-spiral_r        = 5 # m
-spiral_pitch    = 6 # m
+spiral_r        = 8 # m
+spiral_pitch    = 4 # m
 theta           = np.arctan(spiral_pitch / (2 * np.pi * spiral_r)) # radians
 
 # define ground truth positions and orientations
@@ -97,7 +97,6 @@ for i in range(1, N):
     dv = (vraw[i]-vraw[i-1])
     dt = (t[i]-t[i-1])
     araw[i] += dv/dt
-araw[:, Z] += 9.81 # add gravity bc real sensor has z axis flipped
 
 # transform accelerations to device/sensor coord space
 accel = np.zeros_like(gt_pos)

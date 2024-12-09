@@ -4,7 +4,6 @@ from dataStore import WifiDataEntry, WifiDataManager, DataEntry, DataManager
 from dataStream.dataStream import DataStream
 import time
 
-
 class TCPDataStream(DataStream):
 
     def streamThread(self,):
