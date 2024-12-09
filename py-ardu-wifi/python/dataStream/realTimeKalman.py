@@ -21,7 +21,7 @@ dataset = readAll()
 ps = []
 for sequence in dataset:
     _, _, _, _, _, raw_pressure1, _, _, _, _ = sequence
-    ps += raw_pressure1[:200]
+    ps += np.mean(raw_pressure1[:200])
 
 alpha = 1.16e-4
 p0 = np.mean(ps)
