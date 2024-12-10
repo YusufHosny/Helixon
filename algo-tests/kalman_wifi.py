@@ -166,19 +166,19 @@ def getNext():
         dt = ti-ts[ix_raw-2]
         return 'raw', (accel[ix_raw-1, :3], pres[ix_raw-1], dt, ti)
     
-    # elif nexttype == WIFINEXT: # wifi
-    #     ix_wifi += 1
-    #     ti = wifi_timestamp[ix_wifi-1]
+    elif nexttype == WIFINEXT: # wifi
+        ix_wifi += 1
+        ti = wifi_timestamp[ix_wifi-1]
 
-    #     # map bssid data to model format
-    #     dout = np.ones((1, bssidMap.shape[0])) * -100
-    #     for bssid, rssi in zip(bssids[ix_wifi-1], rssis[ix_wifi-1]):
-    #         if bssid in bssidMap:
-    #             ix = np.argmax(bssidMap == bssid)
-    #             dout[0, ix] *= 0
-    #             dout[0, ix] += rssi
+        # map bssid data to model format
+        dout = np.ones((1, bssidMap.shape[0])) * -100
+        for bssid, rssi in zip(bssids[ix_wifi-1], rssis[ix_wifi-1]):
+            if bssid in bssidMap:
+                ix = np.argmax(bssidMap == bssid)
+                dout[0, ix] *= 0
+                dout[0, ix] += rssi
 
-    #     return 'wifi',  (dout, ti)
+        return 'wifi',  (dout, ti)
 
 """
 Execute Kalman filter
@@ -205,25 +205,25 @@ while hasNext():
         kf.update(spiral.point_at_z(height).reshape((3, 1)), H_PRESSURE, R_PRESSURE)
 
 
-    if datatype == 'wifi':
-        # reorganize data
-        data, ti = data
-        position = best_rf.predict(data)[0]
+    # if datatype == 'wifi':
+    #     # reorganize data
+    #     data, ti = data
+    #     position = best_rf.predict(data)[0]
 
-        # predict step
-        kf.predict(np.array([0, 0, 0]).reshape((3, 1)), dt)
+    #     # predict step
+    #     kf.predict(np.array([0, 0, 0]).reshape((3, 1)), dt)
 
-        # update
-        position = np.array(position).flatten()
-        input = position.reshape((3, 1))
-        pwifi += [position]
-        kf.update(input, H_WIFI, R_WIFI)
+    #     # update
+    #     position = np.array(position).flatten()
+    #     input = position.reshape((3, 1))
+    #     pwifi += [position]
+    #     kf.update(input, H_WIFI, R_WIFI)
 
     pos += [kf.xhat.flatten()[:3]]
     times += [ti]
 
 pos = np.array(pos)
-pwifi = np.array(pwifi) - offset
+# pwifi = np.array(pwifi) - offset
 heights = np.array(heights)
 print('Done.')
 
@@ -260,7 +260,7 @@ print('Plotting Results...')
 fig = plt.figure()
 ax = plt.axes(projection='3d')
 ax.plot3D(pos[:, 0], pos[:, 1], pos[:, 2], 'blue')
-ax.plot3D(pwifi[:, 0], pwifi[:, 1], pwifi[:, 2], 'green')
+# ax.plot3D(pwifi[:, 0], pwifi[:, 1], pwifi[:, 2], 'green')
 # ax.plot3D(np.zeros_like(heights.flatten()) + 2, ts[1:], heights.flatten(), 'red')
 ax.plot3D(gt_position[:, 0], gt_position[:, 1], gt_position[:, 2], 'gray')
 plt.show()
