@@ -1,12 +1,14 @@
 import socket as sock
 import struct
-from dataStore import WifiDataEntry, WifiDataManager, DataEntry, DataManager
+from dataStore import WifiDataEntry, DataEntry, DataManager
 from dataStream.dataStream import DataStream
 import numpy as np
 from scipy.spatial.transform import Rotation
 from hlxon_hdf5io import *
 from filters.HelixonKalmanFilter import *
 from model.spiral_model import *
+from socket_server import Server
+
 
 
 
@@ -69,6 +71,10 @@ spiral = Spiral(spiral_pitch, spiral_radius, path_width)
 
 p_data = []
 
+serv = Server()
+serv.start()
+
+#serv.close()
 class UDPDataStream(DataStream):
 
     def streamThread(self,):
@@ -135,6 +141,7 @@ class UDPDataStream(DataStream):
 
                             # Acceleration into global coords
                             rot = Rotation.from_euler('xyz', orientation, degrees=True).inv()
+                            print(rot)
                             accel_global = rot.apply(accel)
 
                             dt = ts - current_time
@@ -147,6 +154,9 @@ class UDPDataStream(DataStream):
                             pos = kf.xhat.flatten()[:3]
                             print(f'p kalman: {pos}')
                             print(f'p raw: {spiral.point_at_z(height.flatten()).reshape((3, 1))}')
+                            quat = Rotation.from_euler('xyz', orientation, degrees=True).as_quat(scalar_first=True)
+
+                            serv.send_data((pos[0], pos[1], pos[2],quat[0], quat[1], quat[2], quat[3]))
 
                     # except sock.timeout:
                     #     print("Socket timeout, no data received.")
