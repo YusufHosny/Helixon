@@ -52,16 +52,9 @@ offset =  gt_position[0]
 gt_position = np.array(gt_position)
 gt_position -= offset
 
-# rotate acceleration to global coords
-accel = np.zeros_like(araw)
-for i, orientation in enumerate(raw_rpy):
-    
-    # check if quat or euler
-    if orientation.shape[-1] == 4:
-        rot = Rotation.from_quat(orientation).inv()
-    else:
-        rot = Rotation.from_euler('xyz', orientation, degrees=True).inv()
-    accel[i] = rot.apply(araw[i])
+# load accels
+accel = araw
+
 print('Done.')
 
 """
@@ -173,19 +166,19 @@ def getNext():
         dt = ti-ts[ix_raw-2]
         return 'raw', (accel[ix_raw-1, :3], pres[ix_raw-1], dt, ti)
     
-    elif nexttype == WIFINEXT: # wifi
-        ix_wifi += 1
-        ti = wifi_timestamp[ix_wifi-1]
+    # elif nexttype == WIFINEXT: # wifi
+    #     ix_wifi += 1
+    #     ti = wifi_timestamp[ix_wifi-1]
 
-        # map bssid data to model format
-        dout = np.ones((1, bssidMap.shape[0])) * -100
-        for bssid, rssi in zip(bssids[ix_wifi-1], rssis[ix_wifi-1]):
-            if bssid in bssidMap:
-                ix = np.argmax(bssidMap == bssid)
-                dout[0, ix] *= 0
-                dout[0, ix] += rssi
+    #     # map bssid data to model format
+    #     dout = np.ones((1, bssidMap.shape[0])) * -100
+    #     for bssid, rssi in zip(bssids[ix_wifi-1], rssis[ix_wifi-1]):
+    #         if bssid in bssidMap:
+    #             ix = np.argmax(bssidMap == bssid)
+    #             dout[0, ix] *= 0
+    #             dout[0, ix] += rssi
 
-        return 'wifi',  (dout, ti)
+    #     return 'wifi',  (dout, ti)
 
 """
 Execute Kalman filter
