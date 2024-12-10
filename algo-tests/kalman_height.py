@@ -8,7 +8,13 @@ import time
 from model.spiral_model import *
 
 # get data from hdf5
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('RandomUDP6')
+raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure1, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('RandomUDP1')
+raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure2, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('RandomUDP2')
+raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure3, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('RandomUDP3')
+raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure4, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('RandomUDP4')
+raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure5, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('RandomUDP5')
+raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure6, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('RandomUDP6')
+
 
 # convenience
 Z = 2

@@ -8,28 +8,14 @@ from hlxon_hdf5io import *
 from filters.HelixonKalmanFilter import *
 from model.spiral_model import *
 
-from pickle import load
 
-with open(os.path.join("model", "wifi_model.pkl"), "rb") as f:
-    best_rf = load(f)
-
-with open(os.path.join("model", "bssid_map.pkl"), "rb") as f:
-    bssidMap = load(f)
-
-dataset = readAll()
-
-ps = []
-for sequence in dataset:
-    _, _, _, _, _, raw_pressure1, _, _, _, _ = sequence
-    ps += np.mean(raw_pressure1[:200])
 
 alpha = 1.16e-4
-p0 = np.mean(ps)
 
 # P (measurement cov mat)
-P = np.identity(2) * .0001
+P = np.identity(6) * .0001
 # Q (process noise)
-Q = np.identity(2) * .01
+Q = np.identity(6) * .1
 
 # R (measurement noise)
 R_PRESSURE = np.diag([700., 700., 10.])
@@ -81,6 +67,7 @@ spiral_radius = 8 #m
 path_width = 2.4 #m
 spiral = Spiral(spiral_pitch, spiral_radius, path_width)
 
+p_data = []
 
 class UDPDataStream(DataStream):
 
@@ -90,6 +77,8 @@ class UDPDataStream(DataStream):
         Z = 2
 
         with sock.socket(sock.AF_INET, sock.SOCK_DGRAM) as s:  # UDP socket
+            current_time = 0
+
             s.settimeout(5)  # Set timeout for receiving data
             print("Ready to send/receive data")
 
@@ -103,6 +92,7 @@ class UDPDataStream(DataStream):
                 packet_type = packet[0:1].decode('utf-8')  # First byte determines type
 
                 if packet_type == 'w':  # Wi-Fi data
+                    time.sleep(.01)
                     print("") # Do nothing
 
                 elif packet_type == 'r':  # Raw data
@@ -129,24 +119,34 @@ class UDPDataStream(DataStream):
                         d.tempbmp       = data_entry_struct[14]
                         d.pressure      = data_entry_struct[15]
 
-                        ### Kalman filter implementation
-                        ts = d.ts * 1e-6  
-                        accel = np.array([d.linaccel[X], d.linaccel[Y], d.linaccel[Z]])
-                        orientation = [d.rpy[X], d.rpy[Y], d.rpy[Z]]
+                        if len(p_data) < 200:
+                            p_data.append(d.pressure)
+                            print("Added")
+                        elif (len(p_data) == 200):
+                            p_data.append(d.pressure)
+                            p0 = np.mean(p_data)
+                            print("computed mean")
+                        else:
+                            print("Printing")
+                            ### Kalman filter implementation
+                            ts = d.ts * 1e-6  
+                            accel = np.array([d.linaccel[X], d.linaccel[Y], d.linaccel[Z]])
+                            orientation = [d.rpy[X], d.rpy[Y], d.rpy[Z]]
 
-                        # Acceleration into global coords
-                        rot = Rotation.from_euler('xyz', orientation, degrees=True).inv()
-                        accel_global = rot.apply(accel)
+                            # Acceleration into global coords
+                            rot = Rotation.from_euler('xyz', orientation, degrees=True).inv()
+                            accel_global = rot.apply(accel)
 
-                        # Predict 
-                        dt = ts - current_time
-                        current_time = ts
-                        kf.predict(accel_global.reshape((3, 1)), dt)
-
-                        # Update 
-                        height = np.log(d.pressure / p0) / -alpha
-                        state = kf.update(spiral.point_at_z(height).reshape((3, 1)), H_PRESSURE, R_PRESSURE)
-                        print(state)
+                            dt = ts - current_time
+                            current_time = ts
+                            kf.predict(np.array(accel_global).reshape((3, 1)), dt)
+                            
+                            # Update 
+                            height = np.array(np.log(d.pressure / p0) / -alpha).reshape(1,1)
+                            kf.update(spiral.point_at_z(height).reshape((3, 1)), H_PRESSURE, R_PRESSURE)
+                            pos = kf.xhat.flatten()[:3]
+                            print(f'p kalman: {pos}')
+                            print(f'p raw: {spiral.point_at_z(height.flatten()).reshape((3, 1))}')
 
                     # except sock.timeout:
                     #     print("Socket timeout, no data received.")
