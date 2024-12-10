@@ -69,7 +69,7 @@ for name, di, posi in zip(dataset_names, data_raw, pos):
     gt_data = np.array([np.stack((t, pi[0], pi[1], pi[2], rpyi[0], rpyi[1], rpyi[2], rpyi[3])) for (t, pi, rpyi) in zip(gt_timestamp, posi, gt_orientation)])
     storeAsHDF5_path(file_path, raw_data, gt_data, wifidata)
 
-PLOT = False
+PLOT = True
 if PLOT:
     # plot all datasets
     X, Y, Z = 0, 1, 2
