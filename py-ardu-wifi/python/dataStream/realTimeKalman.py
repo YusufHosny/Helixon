@@ -10,8 +10,6 @@ from model.spiral_model import *
 from socket_server import Server
 
 
-
-
 alpha = 1.16e-4
 
 # P (measurement cov mat)
@@ -139,14 +137,9 @@ class UDPDataStream(DataStream):
                             accel = np.array([d.linaccel[X], d.linaccel[Y], d.linaccel[Z]])
                             orientation = [d.rpy[X], d.rpy[Y], d.rpy[Z]]
 
-                            # Acceleration into global coords
-                            rot = Rotation.from_euler('xyz', orientation, degrees=True).inv()
-                            print(rot)
-                            accel_global = rot.apply(accel)
-
                             dt = ts - current_time
                             current_time = ts
-                            kf.predict(np.array(accel_global).reshape((3, 1)), dt)
+                            kf.predict(np.array(accel).reshape((3, 1)), dt)
                             
                             # Update 
                             height = np.array(np.log(d.pressure / p0) / -alpha).reshape(1,1)
@@ -156,7 +149,7 @@ class UDPDataStream(DataStream):
                             print(f'p raw: {spiral.point_at_z(height.flatten()).reshape((3, 1))}')
                             quat = Rotation.from_euler('xyz', orientation, degrees=True).as_quat(scalar_first=True)
 
-                            serv.send_data((pos[0], pos[1], pos[2],quat[0], quat[1], quat[2], quat[3]))
+                            serv.send_data((*pos, *quat))
 
                     # except sock.timeout:
                     #     print("Socket timeout, no data received.")
