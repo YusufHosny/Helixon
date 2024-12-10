@@ -15,11 +15,11 @@ alpha = 1.16e-4
 # P (measurement cov mat)
 P = np.identity(6) * .0001
 # Q (process noise)
-Q = np.identity(6) * .1
+Q = np.identity(6) * 30
 
 # R (measurement noise)
-R_PRESSURE = np.diag([700., 700., 10.])
-R_WIFI = np.diag([700., 700., 10000.])
+R_PRESSURE = np.diag([10., 10., 1.]) * 1
+R_WIFI = np.diag([1., 1., 100.]) * 10000
 
 # H (measurement matrix)
 H_PRESSURE = np.array([
