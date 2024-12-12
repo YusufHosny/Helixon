@@ -2,9 +2,10 @@ import numpy as np
 from typing import Self
 import numpy.linalg
 from scipy.optimize  import fsolve
-import time
+from scipy.spatial.transform import Rotation
 import matplotlib.pyplot as plt
 
+X, Y, Z, MAC = 0, 1, 2, 3 # for convenience
 
 class Spiral:
 
@@ -86,7 +87,6 @@ class Spiral:
 
 
         spiral[:,0] -= center_xy_spiral[0]
-
         spiral[:,1] -= center_xy_spiral[1]
 
         return spiral
@@ -99,7 +99,14 @@ class Spiral:
         y_min_spiral = np.min(spiral[:, 1])
 
         # Compute centroids
-        self.center = [(x_max_spiral + x_min_spiral) / 2, (y_max_spiral + y_min_spiral) / 2]
+        self.center = np.array([(x_max_spiral + x_min_spiral) / 2, (y_max_spiral + y_min_spiral) / 2])
+
+        # adjust phase
+        spiralstart = np.array((spiral[0, X], spiral[0, Y], 0)) - np.array([*self.center, 0])
+        default = np.array((self.r, 0, 0))
+
+        rot, _ = Rotation.align_vectors(default, spiralstart)
+        self.phase = rot.as_euler('xyz')[Z]
 
     def point_from_RSSI(self:Self, RSSI: float, router_point: np.ndarray, current_z: float):
 

@@ -3,12 +3,6 @@ Random Forest Regression Based Wifi-Fingerprinting Localization
 """
 
 """
-Configuration
-"""
-GRIDSEARCH = True
-SAVEMODEL = True
-
-"""
 Imports
 """
 import numpy as np
@@ -117,3 +111,36 @@ print(f'test set distance mean squared distance error: {msde}')
 r2 = r2_score(y_test, y_pred)
 print(f'test r2 score: {r2}')
 
+# run on unseen set
+y_pred = best_rf.predict(X_unseen)
+
+# average distance error
+ade = np.mean(np.linalg.norm(y_pred - y_unseen, axis=1))
+print(f'unseen set distance average distance error: {ade}')
+
+# max distance error
+mde = np.linalg.norm(y_pred - y_unseen, axis=1).max()
+print(f'unseen set distance max distance error: {mde}')
+
+# mean squared error over distances
+msde = np.mean(np.linalg.norm(y_pred - y_unseen, axis=1)**2)
+print(f'unseen set distance mean squared distance error: {msde}')
+
+
+"""
+Plot Results (Qualitative)
+"""
+# run on test set
+y_pred = best_rf.predict(X_unseen)
+
+X, Y, Z = 0, 1, 2
+fig = plt.figure()
+ax = plt.axes(projection='3d')
+
+ax.scatter(y_unseen[:, X], y_unseen[:, Y], y_unseen[:, Z], 'blue')
+ax.plot(y_unseen[:, X], y_unseen[:, Y], y_unseen[:, Z], color=(0., 0., 1., 0.3), linestyle='--')
+
+ax.scatter(y_pred[:, X], y_pred[:, Y], y_pred[:, Z], 'gray')
+ax.plot(y_pred[:, X], y_pred[:, Y], y_pred[:, Z], color=(1., 0., 0., 0.3), linestyle='--')
+
+plt.show()

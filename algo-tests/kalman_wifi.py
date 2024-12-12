@@ -16,7 +16,7 @@ Load data
 """
 print('Loading data...', end='')
 # get data from hdf5
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('NormalUDP3')
+raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('NormalUDP2')
 print('Done.')
 
 
@@ -135,7 +135,6 @@ spiral_radius = 8 #m
 path_width = 2.4 #m
 spiral = Spiral(spiral_pitch, spiral_radius, path_width)
 spiral.align_to_spiral(gt_position)
-spiral.phase = 0
 
 """
 hasNext and getNext functions to iterate over all data (imu and wifi) ordered by their timestamps
