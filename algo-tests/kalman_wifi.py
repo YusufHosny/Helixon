@@ -16,7 +16,7 @@ Load data
 """
 print('Loading data...', end='')
 # get data from hdf5
-raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('RandomUDP6')
+raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, wifidata, gt_timestamp, gt_position, gt_orientation = readHDF5('NormalUDP3')
 print('Done.')
 
 
@@ -209,9 +209,6 @@ while hasNext():
     #     # reorganize data
     #     data, ti = data
     #     position = best_rf.predict(data)[0]
-
-    #     # predict step
-    #     kf.predict(np.array([0, 0, 0]).reshape((3, 1)), dt)
 
     #     # update
     #     position = np.array(position).flatten()

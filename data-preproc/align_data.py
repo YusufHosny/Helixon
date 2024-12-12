@@ -65,6 +65,10 @@ for name, di, posi in zip(dataset_names, data_raw, pos):
     r0 = Rotation.from_quat(gt_orientation[0]).inv().as_quat()
     gt_orientation = list(map(lambda q2: quaternion_multiply(r0, q2), gt_orientation))
 
+    # remove pressure outliers (sensor not ready yet)
+    p0 = raw_pressure.max()
+    raw_pressure[np.where(raw_pressure < 100000)] = p0
+
     raw_data = np.array([np.stack((t, ndof[0], ndof[1], ndof[2], ndof[3], ndof[4], ndof[5], ndof[6], ndof[7], ndof[8], rpy[0], rpy[1], rpy[2], bno, bmp, pres)) for (t, ndof, rpy, bno, bmp, pres) in zip(raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure)])
     gt_data = np.array([np.stack((t, pi[0], pi[1], pi[2], rpyi[0], rpyi[1], rpyi[2], rpyi[3])) for (t, pi, rpyi) in zip(gt_timestamp, posi, gt_orientation)])
     storeAsHDF5_path(file_path, raw_data, gt_data, wifidata)
