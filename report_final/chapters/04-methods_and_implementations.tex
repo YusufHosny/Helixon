@@ -46,7 +46,30 @@ After the alignment step, the sensor data is normalized so that the initial meas
 \section{Dataset Storage}
 After synchronization, the data is stored so that it can be further processed. More precisely, the data was stored in HDF5 format (Hierarchical Data Format version 5). More precisely, the data for each full measurement session is stored in one HDF5 file which consists of the ground truth data, the raw data, and the Wi-Fi data. HDF5 format was used for data storage due to its multiple advantages such as its ability to store large datasets in structured hierarchy. The format is presented below.  \cite{hierarchical}
 \par
-ADD TABLE HERE
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.1} % Reduce row height
+\setlength{\tabcolsep}{8pt} % Reduce column spacing
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Group / Category} & \textbf{Subcategories} \\ \hline
+\multirow{3}{*}{GT\_DATA}  & ORIENTATION            \\ \cline{2-2}
+                           & POSITION               \\ \cline{2-2}
+                           & TIMESTAMP              \\ \hline
+\multirow{6}{*}{RAWDATA}   & 9DOF                   \\ \cline{2-2}
+                           & BMP                    \\ \cline{2-2}
+                           & BNO                    \\ \cline{2-2}
+                           & PRESSURE               \\ \cline{2-2}
+                           & RPY                    \\ \cline{2-2}
+                           & TIMESTAMP              \\ \hline
+\multirow{4}{*}{WIFIDATA}  & BSSIDS                 \\ \cline{2-2}
+                           & COUNTS                 \\ \cline{2-2}
+                           & RSSIS                  \\ \cline{2-2}
+                           & TIMESTAMP              \\ \hline
+\end{tabular}
+\caption{Structure of an HDF5 file}
+\label{tab:hdf5_structure}
+\end{table}
 
 \section{Synthetic Data Generation}
 An additional synthetic data pipeline was implemented in order to achieve 3 main goals: providing an alternative to tedious data collection procedures, allowing for quick prototyping of algorithms and schemes before the full dataset was collected, and ensure behavioral integrity and reliability of implemented schemes before real evaluations. Since the required synthetic data generation was not meant to replace the actual dataset, we opted for a simple mathematical model for the sensor outputs, followed by sampled white gaussian noise.
@@ -79,7 +102,21 @@ Using the derived pressure values, we calculate a 3D position in the target envi
 	\caption{A visualization of the derived spiral model (blue) and the ground truth data (gray).}
 \end{figure}
 
-TODO TABLE PITCH RADIUS WIDTH
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{0.9} % Reduce row height
+\setlength{\tabcolsep}{6pt}       % Reduce column spacing
+\begin{tabular}{|l|c|}
+\hline
+\textbf{Parameter}       & \textbf{Value (m)} \\ \hline
+\texttt{spiral\_pitch}   & 4.2               \\ \hline
+\texttt{spiral\_radius}  & 8.0               \\ \hline
+\texttt{path\_width}     & 2.4               \\ \hline
+\end{tabular}
+\vspace{-0.5em}
+\caption{Parameters of the spiral model.}
+\label{tab:spiral_params}
+\end{table}
 \par
 
 The spiral mathematical model was furthermore developed with functionality to align them with ground truth data spirals, to allow for more accurate inference. This is done via calculating the maximum bounds along the x and y axes of the spiral, and then using the resulting centroid as the center of the spiral. Furthermore, the spiral model is capable of deriving a 3D position using a Z value using the formulas below.
@@ -107,13 +144,96 @@ The model's input format is a vector of RSSI values, with each position being as
 
 A grid search was conducted over the number of estimators and the maximum depth, and the following model hyperparameters were determined to perform best for our task. 
 \par
-INSERT TABLE OF HYPERPARAMS
+\begin{table}[h!]
+\centering
+\renewcommand{\arraystretch}{1.1} % Adjust row height
+\setlength{\tabcolsep}{8pt}       % Adjust column spacing
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Parameter}                 & \textbf{Value}             \\ \hline
+\texttt{bootstrap}                 & True                       \\ \hline
+\texttt{ccp\_alpha}                & 0.0                        \\ \hline
+\texttt{criterion}                 & 'squared\_error'           \\ \hline
+\texttt{max\_depth}                & 28                         \\ \hline
+\texttt{max\_features}             & 1.0                        \\ \hline
+\texttt{max\_leaf\_nodes}          & None                       \\ \hline
+\texttt{max\_samples}              & None                       \\ \hline
+\texttt{min\_impurity\_decrease}   & 0.0                        \\ \hline
+\texttt{min\_samples\_leaf}        & 1                          \\ \hline
+\texttt{min\_samples\_split}       & 2                          \\ \hline
+\texttt{min\_weight\_fraction\_leaf} & 0.0                      \\ \hline
+\texttt{monotonic\_cst}            & None                       \\ \hline
+\texttt{n\_estimators}             & 525                        \\ \hline
+\texttt{n\_jobs}                   & None                       \\ \hline
+\texttt{oob\_score}                & False                      \\ \hline
+\texttt{random\_state}             & None                       \\ \hline
+\texttt{verbose}                   & 0                          \\ \hline
+\texttt{warm\_start}               & False                      \\ \hline
+\end{tabular}
+\caption{Model Hyperparameters.}
+\label{tab:model_hyperparameters}
+\end{table}
 \par
 
 \subsection{Kalman Filtering Schemes}
 Using a combination of the IMU's accelerometer data with the NDI method, and the BMP390's pressure data and the derived altitudes, we implemented our first Kalman filtering scheme, which fuses the data from these two sources to attempt to find a more accurate output. The Kalman filter was implemented with a state vector containing the positions and velocities along the x, y, and z axes. A mathematical formulation of the filter is shown below.
 \par
-[FILTER MATRICES from code]
+\[
+H_{\text{PRESSURE}} =
+\begin{bmatrix}
+1.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 \\
+0.0 & 1.0 & 0.0 & 0.0 & 0.0 & 0.0 \\
+0.0 & 0.0 & 1.0 & 0.0 & 0.0 & 0.0 \\
+\end{bmatrix}
+\]
+\begin{center}
+\textbf{Matrix 1:} Measurement matrix for pressure state variables.
+\end{center}
+
+
+\[
+H_{\text{WIFI}} =
+\begin{bmatrix}
+1.0 & 0.0 & 0.0 & 0.0 & 0.0 & 0.0 \\
+0.0 & 1.0 & 0.0 & 0.0 & 0.0 & 0.0 \\
+0.0 & 0.0 & 1.0 & 0.0 & 0.0 & 0.0 \\
+\end{bmatrix}
+\]
+\begin{center}
+\textbf{Matrix 2:} Measurement matrix for WiFi state variables.
+\end{center}
+
+
+\[
+A =
+\begin{bmatrix}
+1.0 & 0.0 & 0.0 & \Delta t & 0.0 & 0.0 \\
+0.0 & 1.0 & 0.0 & 0.0 & \Delta t & 0.0 \\
+0.0 & 0.0 & 1.0 & 0.0 & 0.0 & \Delta t \\
+0.0 & 0.0 & 0.0 & 1.0 & 0.0 & 0.0 \\
+0.0 & 0.0 & 0.0 & 0.0 & 1.0 & 0.0 \\
+0.0 & 0.0 & 0.0 & 0.0 & 0.0 & 1.0 \\
+\end{bmatrix}
+\]
+\begin{center}
+\textbf{Matrix 3:} State transition matrix.
+\end{center}
+
+\[
+B =
+\begin{bmatrix}
+0.5\Delta t^2 & 0.0 & 0.0 \\
+0.0 & 0.5\Delta t^2 & 0.0 \\
+0.0 & 0.0 & 0.5\Delta t^2 \\
+\Delta t & 0.0 & 0.0 \\
+0.0 & \Delta t & 0.0 \\
+0.0 & 0.0 & \Delta t \\
+\end{bmatrix}
+\]
+\begin{center}
+\textbf{Matrix 4:} Control transition matrix.
+\end{center}
+
 \par
 The filter's covariance and noise matrices were tuned by hand and evaluated over dataset sequences in order to choose the best performing values.
 \par
@@ -125,7 +245,45 @@ The second step of the head-tracking system was implementing an attitude estimat
 \section{Real-Time Communication}
 The final step of the head-tracking system was ensuring the system can run in real-time and not just on the collected dataset. Given that our signal processing schemes were implemented to run in a python desktop environment and were incapable of running on the microcontroller, we had to set up real-time network communication between the system and the python environment. We implemented two interchangeable communication layers; one built on TCP, and one built on UDP. The UDP system is preferred and was used for our data collection and real-time testing, since the system is more efficient and robust to packet drops. The system relies on two internal data structures used to represent the sensor data and the Wi-Fi data respectively.
 \par
-ADD DATAENTRY STTRUCT DEFINITON
+
+ \noindent\small
+\begin{table}[h!]
+\centering
+\resizebox{\linewidth}{!}{ % Resize table to fit column width
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Type}            & \textbf{Name}                     & \textbf{Size (bytes)}   & \textbf{Notes}              \\ \hline
+\texttt{unsigned long}   & \texttt{microsT}                  & 4                      & 4 bytes padding             \\ \hline
+\texttt{double}          & \texttt{linaccelx, linaccely, linaccelz} & $8 \times 3 = 24$ & Linear acceleration         \\ \hline
+\texttt{double}          & \texttt{gyrox, gyroy, gyroz}      & $8 \times 3 = 24$      & Gyroscope values            \\ \hline
+\texttt{double}          & \texttt{magnx, magny, magnz}      & $8 \times 3 = 24$      & Magnetometer values         \\ \hline
+\texttt{double}          & \texttt{roll, pitch, yaw}         & $8 \times 3 = 24$      & Orientation values          \\ \hline
+\texttt{int8\_t}         & \texttt{tempnbo}                  & 1                      & 7 bytes padding             \\ \hline
+\texttt{double}          & \texttt{tempbmp}                  & 8                      & Temperature                 \\ \hline
+\texttt{double}          & \texttt{pressure}                 & 8                      & Pressure                    \\ \hline
+\end{tabular}
+}
+\caption{Structure of \texttt{DataEntry} (Size: 128 bytes).}
+\label{tab:dataentry}
+\end{table}
+
+\noindent\small
+\begin{table}[h!]
+\centering
+\resizebox{\linewidth}{!}{ % Resize table to fit column width
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Type}            & \textbf{Name}               & \textbf{Size (bytes)}   & \textbf{Notes}              \\ \hline
+\texttt{unsigned long}   & \texttt{microsT}            & 4                      & -                           \\ \hline
+\texttt{int8\_t}         & \texttt{rssiCnt}            & 1                      & 1 byte padding              \\ \hline
+\texttt{byte}            & \texttt{BSSIDs[25][6]}      & $25 \times 6 = 150$    & 1 byte padding              \\ \hline
+\texttt{int32\_t}        & \texttt{RSSIs[25]}          & $25 \times 4 = 100$    & -                           \\ \hline
+\end{tabular}
+}
+\caption{Structure of \texttt{RssiDataEntry} (Size: 256 bytes).}
+\label{tab:rssidatadataentry}
+\end{table}
+
 \par
 
 \section{Visualization}
