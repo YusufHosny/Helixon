@@ -6,7 +6,7 @@
 %%% You should specify your campus : groept, denayer, gent, geel and brugge are implemented
 %%% You can hide parts of the preface by specifying some option:
 %%% e.g. : noacknowledgements, noabstract, nosamenvatting, nolistoffigures, nolistoftables, nolistofsymbols
-\usepackage[groept]{fiiw}
+\usepackage[groept, nolistofsymbols]{fiiw}
 
 
 %%% Load some other basic packages
@@ -14,7 +14,7 @@
 \usepackage[latin1]{inputenc}           % needed if you have special characters in your text
 %\usepackage[utf8]{inputenc}            % if your text is encoded in utf8 (and not latin1) use this package
 \usepackage{hyperref} 
-\usepackage{natbib}						% used for cites from the bib file in your text
+ \usepackage[numbers]{natbib}
 \usepackage{listings}             		% used for displaying source code (java, c, matlab,...)
 \usepackage{verbatim}					% used for inline formatting of source code, terminal commands, ...
 \usepackage{textcomp}					% symbols
@@ -25,6 +25,11 @@
 \usepackage{longtable}					% used for tables that strech over muliple pages
 \usepackage[toc, acronyms]{glossaries}	% used by the list of symbols
 \usepackage{bookmark}
+\usepackage{cleveref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx} % For auto-adjustable table width
+\renewcommand{\arraystretch}{1.2} % Adjust row spacing for clarity
 
 % generate lorum ipsim text in template
 \usepackage{lipsum}
@@ -91,17 +96,19 @@
 
 	\preface
 	\input{chapters/01-introduction}
-	\input{chapters/02-design}
-	\input{chapters/03-implementation}
-	\input{chapters/04-results}
-	\input{chapters/05-discussion}
-	\input{chapters/06-conclusion}
+	\input{chapters/02-detailed_problem_requirements}
+	\input{chapters/03-related_work}
+	\input{chapters/04-methods_and_implementations}
+	\input{chapters/05-results_and_evaluation}
+	\input{chapters/06-discussion}
+	\input{chapters/07-future_work}
+	\input{chapters/08-conclusions}
 
 
 	%%% Bibliography: references. included from bibliography.bib
 	%%% Only referenced items are displayed in the final document
-	%\nocite{*}			% if you also want to display the unreferenced items in your bibliografy uncomment this
-	\bibliographystyle{ieeetr}
+	\nocite{*}			% if you also want to display the unreferenced items in your bibliografy uncomment this
+	\bibliographystyle{ieeetranN}
 	\bibliography{bibliography}
 
 	%%% appendices

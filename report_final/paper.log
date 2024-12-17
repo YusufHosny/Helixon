@@ -1,9 +1,9 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.11.6)  2 DEC 2024 20:23
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.11.6)  17 DEC 2024 10:33
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**./paper.tex
-(paper.tex
+**C:/Users/Yusuf/Desktop/Stuff/Uni/Masters/R&D/repo/report_final/paper.tex
+(C:/Users/Yusuf/Desktop/Stuff/Uni/Masters/R&D/repo/report_final/paper.tex
 LaTeX2e <2024-11-01>
 L3 programming layer <2024-10-09>
 (C:\Users\Yusuf\AppData\Local\Programs\MiKTeX\tex/latex/base\report.cls
@@ -24,7 +24,7 @@ File: size11.clo 2024/06/29 v1.4n Standard LaTeX file (size option)
 \belowcaptionskip=\skip50
 \bibindent=\dimen141
 )
-(fiiw.sty
+(C:/Users/Yusuf/Desktop/Stuff/Uni/Masters/R&D/repo/report_final\fiiw.sty
 Package: fiiw 2020/03/01 FIIW Master Thesis template package
 
 (C:\Users\Yusuf\AppData\Local\Programs\MiKTeX\tex/latex/multirow\multirow.sty
@@ -985,8 +985,10 @@ Package pdftex.def Info: images/logos/sedes.png  used on input line 92.
 
 
 {C:/Users/Yusuf/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/Yusu
-f/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc} <./images/logos/se
-des.png> <./images/logos/KULEUVEN_CMYK_LOGO-eps-converted-to.pdf>]
+f/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/base/8r.enc} <C:/Users/Yusuf/De
+sktop/Stuff/Uni/Masters/R&D/repo/report_final/images/logos/sedes.png> <C:/Users
+/Yusuf/Desktop/Stuff/Uni/Masters/R&D/repo/report_final/images/logos/KULEUVEN_CM
+YK_LOGO-eps-converted-to.pdf>]
 *geometry* verbose mode - [ newgeometry ] result:
 * driver: pdftex
 * paper: a4paper
@@ -1047,7 +1049,8 @@ LaTeX Font Info:    Font shape `OT1/phv/m/n' will be
 LaTeX Font Info:    Font shape `OT1/phv/b/n' will be
 (Font)              scaled to size 8.99994pt on input line 92.
 
-(chapters/abstract.tex)
+(C:/Users/Yusuf/Desktop/Stuff/Uni/Masters/R&D/repo/report_final\chapters/abstra
+ct.tex)
 LaTeX Font Info:    Font shape `OT1/phv/m/n' will be
 (Font)              scaled to size 6.29996pt on input line 92.
 LaTeX Font Info:    Trying to load font information for TS1+phv on input line 9
@@ -1062,74 +1065,135 @@ File: ts1phv.fd 2020/03/25 scalable font definitions for TS1/phv.
 
 
 
-] (chapters/01-introduction.tex
+]
+(C:/Users/Yusuf/Desktop/Stuff/Uni/Masters/R&D/repo/report_final\chapters/01-int
+roduction.tex
 Chapter 1.
 LaTeX Font Info:    Font shape `OT1/phv/b/n' will be
 (Font)              scaled to size 9.85492pt on input line 1.
-) (chapters/02-design.tex
+)
+(C:/Users/Yusuf/Desktop/Stuff/Uni/Masters/R&D/repo/report_final\chapters/02-det
+ailed_problem_requirements.tex
 Chapter 2.
-) (chapters/03-implementation.tex
+<./images/spiral_groupt.jpg, id=22, 267.24844pt x 178.41656pt>
+File: ./images/spiral_groupt.jpg Graphic file (type jpg)
+<use ./images/spiral_groupt.jpg>
+Package pdftex.def Info: ./images/spiral_groupt.jpg  used on input line 7.
+(pdftex.def)             Requested size: 213.1058pt x 142.26378pt.
+
+Package natbib Warning: Citation `bno055' on page 3 undefined on input line 13.
+
+
+
+Package natbib Warning: Citation `bmp390' on page 3 undefined on input line 13.
+
+
+)
+(C:/Users/Yusuf/Desktop/Stuff/Uni/Masters/R&D/repo/report_final\chapters/03-rel
+ated_work.tex
+
 Chapter 3.
-) (chapters/04-results.tex
+)
+(C:/Users/Yusuf/Desktop/Stuff/Uni/Masters/R&D/repo/report_final\chapters/04-met
+hods_and_implementations.tex
 Chapter 4.
-) (chapters/05-discussion.tex
+)
+(C:/Users/Yusuf/Desktop/Stuff/Uni/Masters/R&D/repo/report_final\chapters/05-res
+ults_and_evaluation.tex
 Chapter 5.
-) (chapters/06-conclusion.tex
+)
+(C:/Users/Yusuf/Desktop/Stuff/Uni/Masters/R&D/repo/report_final\chapters/06-dis
+cussion.tex
 Chapter 6.
-) (chapters/acknowledgements.tex) (chapters/symbols.tex) (paper.bbl)
-
-
+)
+(C:/Users/Yusuf/Desktop/Stuff/Uni/Masters/R&D/repo/report_final\chapters/07-fut
+ure_work.tex
+Chapter 7.
+)
+(C:/Users/Yusuf/Desktop/Stuff/Uni/Masters/R&D/repo/report_final\chapters/08-con
+clusions.tex
+Chapter 8.
+)
+(C:/Users/Yusuf/Desktop/Stuff/Uni/Masters/R&D/repo/report_final\chapters/acknow
+ledgements.tex)
+(C:/Users/Yusuf/Desktop/Stuff/Uni/Masters/R&D/repo/report_final\chapters/symbol
+s.tex) (paper.bbl)
 
 [3
 
 
 
 
-
-]
+ <C:/Users/Yusuf/Desktop/Stuff/Uni/Masters/R&D/repo/report_final/images/spiral_
+groupt.jpg>]
 LaTeX Font Info:    Font shape `OT1/phv/m/n' will be
-(Font)              scaled to size 12.9599pt on input line 109.
+(Font)              scaled to size 12.9599pt on input line 111.
 \c@ttl@toc@chapter=\count362
  (paper.ptc)
 
 LaTeX Font Info:    Font shape `OT1/phv/m/n' will be
-(Font)              scaled to size 7.19995pt on input line 109.
+(Font)              scaled to size 7.19995pt on input line 111.
 LaTeX Font Info:    Font shape `OT1/phv/b/n' will be
-(Font)              scaled to size 7.19995pt on input line 109.
-<images/logos/kuleuven_side.png, id=32, 196.3335pt x 551.661pt>
+(Font)              scaled to size 7.19995pt on input line 111.
+<images/logos/kuleuven_side.png, id=40, 196.3335pt x 551.661pt>
 File: images/logos/kuleuven_side.png Graphic file (type png)
 <use images/logos/kuleuven_side.png>
-Package pdftex.def Info: images/logos/kuleuven_side.png  used on input line 109
+Package pdftex.def Info: images/logos/kuleuven_side.png  used on input line 111
 .
 (pdftex.def)             Requested size: 20.25163pt x 56.9055pt.
 [4
 
 
- <./images/logos/kuleuven_side.png>] (chapters/appendix1.tex)
+ <C:/Users/Yusuf/Desktop/Stuff/Uni/Masters/R&D/repo/report_final/images/logos/k
+uleuven_side.png>]
+(C:/Users/Yusuf/Desktop/Stuff/Uni/Masters/R&D/repo/report_final\chapters/append
+ix1.tex)
 \tf@ptc=\write3
 \openout3 = `paper.ptc'.
 
- (paper.aux)
+
+
+Package natbib Warning: There were undefined citations.
+
+(paper.aux
+
+Package natbib Warning: Citation(s) may have changed.
+(natbib)                Rerun to get citations correct.
+
+
+! Package natbib Error: Bibliography not compatible with author-year citations.
+
+(natbib)                Press <return> to continue in numerical citation style.
+
+
+See the natbib package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.49 ...mand\NAT@force@numbers{}\NAT@force@numbers
+                                                  
+? 
+)
  ***********
 LaTeX2e <2024-11-01>
 L3 programming layer <2024-10-09>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 23624 strings out of 473702
- 409355 string characters out of 5719438
- 1125961 words of memory out of 5000000
- 46248 multiletter control sequences out of 15000+600000
- 598577 words of font info for 99 fonts, out of 8000000 for 9000
+ 23684 strings out of 473702
+ 412077 string characters out of 5719438
+ 1130966 words of memory out of 5000000
+ 46292 multiletter control sequences out of 15000+600000
+ 600044 words of font info for 101 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 94i,12n,93p,2347b,779s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 94i,12n,105p,2408b,779s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/Yusuf/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhvb8a
 .pfb><C:/Users/Yusuf/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/uhv
 r8a.pfb><C:/Users/Yusuf/AppData/Local/Programs/MiKTeX/fonts/type1/urw/helvetic/
 uhvro8a.pfb>
-Output written on paper.pdf (4 pages, 224679 bytes).
+Output written on paper.pdf (4 pages, 259725 bytes).
 PDF statistics:
- 83 PDF objects out of 1000 (max. 8388607)
- 12 named destinations out of 1000 (max. 500000)
- 80 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 105 PDF objects out of 1000 (max. 8388607)
+ 19 named destinations out of 1000 (max. 500000)
+ 117 words of extra memory for PDF output out of 10000 (max. 10000000)
 
