@@ -176,7 +176,7 @@ A grid search was conducted over the number of estimators and the maximum depth,
 \par
 
 \subsection{Kalman Filtering Schemes}
-Using a combination of the IMU's accelerometer data with the NDI method, and the BMP390's pressure data and the derived altitudes, we implemented our first Kalman filtering scheme, which fuses the data from these two sources to attempt to find a more accurate output. The Kalman filter was implemented with a state vector containing the positions and velocities along the x, y, and z axes. A mathematical formulation of the filter is shown below.
+Using a combination of the IMU's accelerometer data with the NDI method, and the BMP390's pressure data and the derived altitudes, we implemented our first Kalman filtering scheme, which fuses the data from these two sources to attempt to find a more accurate output. The Kalman filter was implemented with a state vector containing the positions and velocities along the x, y, and z axes. A mathematical formulation of the filter is shown below. These filters were then tuned by a scalar parameter scaling these matrices.
 \par
 \[
 H_{\text{PRESSURE}} =
