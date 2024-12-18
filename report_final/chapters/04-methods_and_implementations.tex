@@ -89,7 +89,7 @@ The simplest and most well-known approach to positioning using IMU data is naive
 	\caption{The massive drift issues apparent in NDI.}
 \end{figure}
 
-\subsection{Pressure and Environmnt Model Based Positioning}
+\subsection{Pressure and Environment Model Based Positioning}
 The next positioning method we explored was using the BMP390 pressure sensor's pressure values, along with our environment model for the spiral environment.
 \subsubsection{Pressure Based Altitude Estimation}
 Using the following formula, we determined the height values using the pressure data received.
@@ -142,7 +142,7 @@ Given the ubiquitous nature of Wi-Fi networks, using Wi-Fi data for positioning 
 The model's input format is a vector of RSSI values, with each position being associated with a unique Wi-Fi BSSID found in the training set. During inference, any BSSIDs not found in the dataset are disregarded, and any BSSIDs found have their associated RSSI values placed at the corresponding position in the input vector. Any undetected BSSIDs in the input vector are set to a value of -100dB.
 \par
 
-A grid search was conducted over the number of estimators and the maximum depth, and the following model hyperparameters were determined to perform best for our task. 
+A grid search was conducted over the number of estimators and the maximum depth, and the following model hyperparameters were determined to perform best for our task. The results of the grid search are shown along with the model's hyperparameters in \cref{tab:model_hyperparameters}.
 \par
 \begin{table}[h!]
 \centering
@@ -240,7 +240,7 @@ The filter's covariance and noise matrices were tuned by hand and evaluated over
 Another architecture we experimented with was incorporating the Wi-Fi positioning data as well into the Kalman filtering scheme. This Kalman filter used the same state vector and transition matrix, however, the filter was updated using both the pressure-altitude based positions and the Wi-Fi positioning data.
 
 \section{Orientation Estimation}
-The second step of the head-tracking system was implementing an attitude estimation system. Our implemented attitude system uses the BNO055 IMU's orientation estimation system, with some further postprocessing. The data is retrieved as roll, pitch, yaw Euler angles in degrees, and are baselined on an initial assumption of the user starting approximately at the orientation origin. \cite{bno}
+The second step of the head-tracking system was implementing an attitude estimation system. Our implemented attitude system uses the BNO055 IMU's orientation estimation system, with some further postprocessing. The data is retrieved as roll, pitch, yaw Euler angles in degrees, and are baselined on an initial assumption of the user starting approximately at the orientation origin. \cite{bno055}
 
 \section{Real-Time Communication}
 The final step of the head-tracking system was ensuring the system can run in real-time and not just on the collected dataset. Given that our signal processing schemes were implemented to run in a python desktop environment and were incapable of running on the microcontroller, we had to set up real-time network communication between the system and the python environment. We implemented two interchangeable communication layers; one built on TCP, and one built on UDP. The UDP system is preferred and was used for our data collection and real-time testing, since the system is more efficient and robust to packet drops. The system relies on two internal data structures used to represent the sensor data and the Wi-Fi data respectively.
