@@ -33,7 +33,8 @@ def angular_distance(b, a):
     return np.where(np.abs(b-a) < 180, b-a, np.where((b-a) > 0, 360 - (b-a), 360 + (b-a)))
 
 def determine_delay(raw_rpy, raw_timestamp, gt_orientation, gt_timestamp):
-    ts = np.array(raw_timestamp)
+    ts = np.array(raw_timestamp)*1e-6
+    gt_timestamp = np.array(gt_timestamp)*1e-6
 
     rots = np.array([Rotation.from_quat(q).as_euler('xyz', degrees=True) for q in gt_orientation]) # change quat gt rots to euler
     rots -= rots[0] # normalize to initial rot
@@ -84,14 +85,20 @@ def determine_delay(raw_rpy, raw_timestamp, gt_orientation, gt_timestamp):
 
 
     fs = len(unified_ts) / unified_ts[-1]
-    n = len(rpy[:, X])
 
-    corr = signal.correlate(rots[:, X], rpy[:, X], mode='same') / np.sqrt(signal.correlate(rpy[:, X], rpy[:, X], mode='same')[int(n/2)] * signal.correlate(rots[:, X], rots[:, X], mode='same')[int(n/2)])
-
+    # take correlation only over first 10 seconds
+    f10 = int(fs * 10)
+    n = len(rpy[:f10, X])
+    corr = signal.correlate(rots[:f10, X], rpy[:f10, X], mode='same') / np.sqrt(signal.correlate(rpy[:f10, X], rpy[:f10, X], mode='same')[int(n/2)] * signal.correlate(rots[:f10, X], rots[:f10, X], mode='same')[int(n/2)])
+    
     delay_arr = np.linspace(-0.5*n, 0.5*n, n)
+
+    # max delay of 1 second, since coarse synchronization was already done
+    corr = corr[np.where(np.abs(delay_arr) < 1*fs)] 
+    delay_arr = delay_arr[np.where(np.abs(delay_arr) < 1*fs)]
     delay = delay_arr[np.argmax(corr)]
 
-    return delay / fs
+    return 1e6 * delay / fs
 
 
 data_raw = readAll()
@@ -133,15 +140,30 @@ for name, di, posi in zip(dataset_names, data_raw, pos):
     p0 = raw_pressure.max()
     raw_pressure[np.where(raw_pressure < 100000)] = p0
 
+    # convert to numpy arrays 
+    raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, gt_timestamp, gt_position, gt_orientation = \
+        map(np.asarray, (raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure, gt_timestamp, gt_position, gt_orientation))
+
     # apply cross correlation
     delay = determine_delay(raw_rpy, raw_timestamp, gt_orientation, gt_timestamp)
-    gt_timestamp = np.array(gt_timestamp)
-    gt_orientation = np.array(gt_orientation)
-    gt_timestamp -= delay
-    gt_orientation = gt_orientation[np.where(gt_timestamp >= 0)]
-    gt_position = gt_position[np.where(gt_timestamp >= 0)]
-    gt_timestamp = gt_timestamp[np.where(gt_timestamp >= 0)]
-
+    print(delay*1e-6)
+    if delay > 0:
+        gt_timestamp -= delay
+        gt_orientation = gt_orientation[np.where(gt_timestamp >= 0)]
+        gt_position = gt_position[np.where(gt_timestamp >= 0)]
+        gt_timestamp = gt_timestamp[np.where(gt_timestamp >= 0)]
+    else:
+        for i in range(len(wifidata)):
+            wifidata[i][0] -= delay
+        wifidata = list(filter(lambda row: row[0] > 0, wifidata))
+        raw_timestamp -= delay
+        raw_9dof = raw_9dof[np.where(raw_timestamp >= 0)]
+        raw_rpy = raw_rpy[np.where(raw_timestamp >= 0)]
+        raw_bno = raw_bno[np.where(raw_timestamp >= 0)]
+        raw_bmp = raw_bmp[np.where(raw_timestamp >= 0)]
+        raw_pressure = raw_pressure[np.where(raw_timestamp >= 0)]
+        raw_timestamp = raw_timestamp[np.where(raw_timestamp >= 0)]
+        
     raw_data = np.array([np.stack((t, ndof[0], ndof[1], ndof[2], ndof[3], ndof[4], ndof[5], ndof[6], ndof[7], ndof[8], rpy[0], rpy[1], rpy[2], bno, bmp, pres)) for (t, ndof, rpy, bno, bmp, pres) in zip(raw_timestamp, raw_9dof, raw_rpy, raw_bno, raw_bmp, raw_pressure)])
     gt_data = np.array([np.stack((t, pi[0], pi[1], pi[2], rpyi[0], rpyi[1], rpyi[2], rpyi[3])) for (t, pi, rpyi) in zip(gt_timestamp, posi, gt_orientation)])
     storeAsHDF5_path(file_path, raw_data, gt_data, wifidata)
