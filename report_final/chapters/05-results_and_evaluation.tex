@@ -44,20 +44,15 @@ In the evaluation of the positioning system, three main metrics were used: the a
 \textbf{\centering Kalman Fusing Accelerometer and Pressure} & 
 \textbf{Kalman with Wi-Fi Data} \\ 
 \midrule
-ATE (m) & 3.13 & 3.13 & 5.49 \\
-RTE (m) & 2.81 & 2.80 & 2.87 \\
-Average Error (m)             & 2.14 & 2.14 & 4.06 \\
+ATE (m) & 3.28 & 3.28 & 5.54 \\
+RTE (m) & 3.01 & 3.01 & 3.07 \\
+Average Error (m)             & 2.25 & 2.25 & 4.07 \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \section{Orientation Estimation System}
-In our evaluation of the orientation system, a preprocessing step was conducted in order to improve the synchronization of the ground truth and measured data. A cross correlation was calculated between the two signals and used to determine an optimal time shift between the two signals. Even with the rough synchronization applied during data collection, the cross correlation was still able to detect a time shift, which was accounted for in this evaluation.
-
-\begin{figure}[h] 
-	\centering \includegraphics[height=4cm]{./images/crosscorrel.png}
-	\caption{The results of the cross correlation of the ground truth and measured rotations (top) and the shifted data (red) after the delay was calculated (bottom).}
-\end{figure}
+To evaluate the orientation system, we used average, median, and max error as evalution metrics. Furthermore, we evaluated the system both as a whole and on individual angle components.
 
 \begin{table}[h!]
 \centering
@@ -69,9 +64,9 @@ In our evaluation of the orientation system, a preprocessing step was conducted 
 \toprule
 \textbf{Metric}      & \textbf{Value (\textdegree \ )} \\ 
 \midrule
-Median Error         & 28   \\
-Average Error        & 35   \\
-Max Error            & 168  \\ 
+Median Error         & 35   \\
+Average Error        & 39   \\
+Max Error            & 162  \\ 
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -86,9 +81,9 @@ Max Error            & 168  \\
 \toprule
 \textbf{Metric}      & \textbf{Roll (\textdegree \ )} & \textbf{Pitch (\textdegree \ )} & \textbf{Yaw (\textdegree \ )} \\ 
 \midrule
-Median Error         & 27.4                   & 3.59                    & 2.42                  \\
-Average Error        & 33.96                  & 3.85                    & 2.78                  \\
-Max Error            & 168.36                 & 13.97                   & 11.67                 \\ 
+Median Error         & 34.39                   & 3.75                    & 2.40                  \\
+Average Error        & 38.61                  & 4.09                    & 2.84                  \\
+Max Error            & 162.46                 & 21.50                   & 18.21                 \\ 
 \bottomrule
 \end{tabularx}
 \end{table}

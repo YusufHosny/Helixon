@@ -30,19 +30,8 @@ Generative AI can help create realistic sensor noise. By training on a dataset c
 \end{figure}
 
 \section{Data Collection and Processing}
-For the future there are several points to improve upon both for data collection and pre-processing. 
-For Data collection:
+Data collection could be done using more accurate SLAM tools instead of an iPhone. An example of such a tool would be a high-quality stereo camera with LIDAR. This would help improve the accuracy of the data measured. Furthermore, a possible approach to expand the collected data would be to generate synthetic variations of the collected dataset to simulate different scenarios, creating a larger and more general augmented dataset.
 
-\begin{itemize}
-  \item Data collection could be done using more accurate SLAM tools instead of an iPhone. An example of such a tool would be a high-quality stereo camera with LIDAR. This would help improve the accuracy of the data measured.
-  \item Generate synthetic variations of the collected dataset to simulate different scenarios. So, using data augmentation, we would create different datasets from an originally measured one to increase and vary our dataset.
-\end{itemize}
-
-For pre-processing:
-
-\begin{itemize}
-  \item As mentioned before, the method used for synchronization of the ground truth and the raw data was not perfect as it was coarse tuning. Therefore, a fine-tuning method can be applied. This first starts by resampling one of the two signals so that they both have the same sampling frequency. This is crucial because the next step is performing the cross correlation of the signals, and to do that, the signals should have a constant and equal sampling frequency. Performing the cross correlation informs us of how much the 2 signals lag each other, and we can then shift one of the signals by that time to match them. This will help synchronize the signals properly. \cite{yan_2019_ronin}
-\end{itemize}
 
 \section{Position Estimation}
 The implemented positioning system can be improved via various methods, however, given the scope and requirements of the project, we propose a few main future improvements to the system. 
