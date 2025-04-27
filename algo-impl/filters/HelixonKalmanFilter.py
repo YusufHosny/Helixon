@@ -11,12 +11,13 @@ class HelixonKalmanFilter:
         self.Q = Q
         self.xhat = np.zeros((P.shape[0], 1))
 
-    def predict(self: Self, input: np.ndarray, dt: float):
-        self.A = self.getA(dt)
-        self.B = self.getB(dt)
+    def predict(self: Self, input: np.ndarray, dt: float, A: np.ndarray = None, B: np.ndarray = None, Q: np.ndarray = None):
+        if Q is not None: self.Q = Q
+        if A is None: A = self.getA(dt)
+        if B is None: B = self.getB(dt)
         
-        self.xhat = self.A @ self.xhat + self.B @ input
-        self.P = self.A @ self.P @ self.A.T + self.Q
+        self.xhat = A @ self.xhat + B @ input
+        self.P = A @ self.P @ A.T + self.Q
 
     def update(self: Self, y: np.ndarray, H: np.ndarray, R: np.ndarray):
         self.K = self.P @ H.T @ np.linalg.inv((H @ self.P @ H.T) + R)
